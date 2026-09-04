@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create GST Labor Ticket</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen bg-[radial-gradient(circle_at_top,_#ecfdf5,_#dff5ee_32%,_#e1f3f7_70%,_#f5f9f8_100%)] text-slate-800">
+    <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+        <div class="overflow-hidden rounded-3xl border border-emerald-200/80 bg-white/90 shadow-[0_25px_60px_rgba(15,118,110,0.12)] backdrop-blur-sm">
+            <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-amber-700 px-6 py-6 text-white">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-amber-300">Geological Survey of Tanzania</p>
+                        <h1 class="mt-2 text-3xl font-bold">Submit New Ticket</h1>
+                    </div>
+                    <a href="{{ route('tickets.index') }}" class="rounded-full border border-white/20 bg-white/5 px-3 py-2 text-sm font-medium text-white hover:bg-white/10">
+                        Back to List
+                    </a>
+                </div>
+            </div>
+
+            <div class="p-6 sm:p-8">
+                @if ($errors->any())
+                    <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <strong class="font-bold">Please correct the following:</strong>
+                        <ul class="mt-2 list-disc space-y-1 pl-5">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <form action="{{ route('tickets.store') }}" method="POST" class="space-y-5">
+                    @csrf
+
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">Subject</label>
+                        <input type="text" name="subject" value="{{ old('subject') }}" placeholder="Example: Computer cannot connect to WiFi" required class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-200">
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">Category</label>
+                        <select name="category_id" required class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-200">
+                            <option value="">-- Select category --</option>
+                            @foreach($categories as $category)
+                                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">Priority</label>
+                        <select name="priority" required class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-200" id="prioritySelect">
+                            <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>Low</option>
+                            <option value="medium" {{ old('priority') == 'medium' ? 'selected' : '' }}>Medium</option>
+                            <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>High</option>
+                            <option value="critical" {{ old('priority') == 'critical' ? 'selected' : '' }}>Critical</option>
+                        </select>
+                        <div class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                            <span class="font-semibold">Estimated waiting time:</span>
+                            <span id="priorityWaitTime">2-3 hours</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-700">Description</label>
+                        <textarea name="description" rows="5" required placeholder="Describe the issue in detail..." class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-amber-500 focus:bg-white focus:ring-2 focus:ring-amber-200">{{ old('description') }}</textarea>
+                    </div>
+
+                    <button type="submit" class="w-full rounded-2xl bg-slate-900 px-5 py-3 text-base font-semibold text-white transition hover:bg-slate-700">
+                        Submit Ticket
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const priorityTimes = {
+            low: '4-6 days',
+            medium: '2-3 days',
+            high: '1-2 days',
+            critical: 'few hours'
+        };
+
+        const prioritySelect = document.getElementById('prioritySelect');
+        const priorityWaitTime = document.getElementById('priorityWaitTime');
+
+        function updatePriorityWaitTime() {
+            const selected = prioritySelect.value;
+            priorityWaitTime.textContent = priorityTimes[selected] || 'Please select a priority';
+        }
+
+        prioritySelect.addEventListener('change', updatePriorityWaitTime);
+        updatePriorityWaitTime();
+    </script>
+</body>
+</html>

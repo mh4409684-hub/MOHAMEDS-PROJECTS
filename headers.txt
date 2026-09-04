@@ -1,0 +1,23 @@
+HTTP/1.1 302 Found
+Host: 127.0.0.1:8000
+Connection: close
+X-Powered-By: PHP/8.2.12
+Cache-Control: no-cache, private
+Date: Tue, 01 Sep 2026 10:31:08 GMT
+Location: http://127.0.0.1:8000/dashboard
+Content-Type: text/html; charset=utf-8
+X-RateLimit-Limit: 5
+X-RateLimit-Remaining: 4
+Set-Cookie: XSRF-TOKEN=eyJpdiI6Ikdwb1QwN0xIdmtBK2tGT1k1M0RXaXc9PSIsInZhbHVlIjoiK1RYN1FIcVc3S3I0VjZBQkt2Y0xlVHpvZUpRUEU0ZGdVcEd4ZWRGRENQRlRKUmpOcXdYZEpWYmRKSXB0ZnA5MnRJT24vdlgwYU5Yc3NSUFRTMEI2cDFjbUZ1QlpOU3g2Vy95SWtqZ0ttazdmZllNdlAzL1d5aTBjYWllQzE1RWIiLCJtYWMiOiIyZGMyOTA1ZmI3NWYzNzg1M2JkOTBiYzRlZDAyNDRlODQ5OGUwMDM1YmJhMDI0MTdjOTlhMTc1OTRkOGJiYTEzIiwidGFnIjoiIn0%3D; expires=Tue, 01 Sep 2026 12:31:08 GMT; Max-Age=7200; path=/; samesite=lax
+Set-Cookie: laravel-session=eyJpdiI6IjRPWVEvMFlOUDJSNmp0RW1TV1QvTkE9PSIsInZhbHVlIjoibytGZFBNYU9QSDczVnRBR3lRL0NML3FYS1M0eVE0cCs1cVkyMW9iRi9WUldsYWN0WFlLbDBFYVZ2bmJWVkNjZkxyNHNIa3hHQzFTMUN6Zys2eFFETmZld2VvTThhVElYMUYvdWJOMStZUzE0c3RHUlVWNUtQR0V0U3JpaWVYZVUiLCJtYWMiOiJhOWI0OGE4NDVkODZkMjgyMDg2ZTdmYjY1MmFhYmM3ZTVhNzg4MTZlODMyZjhjZWFjOWQxZGFhMDVmOTZjMDAzIiwidGFnIjoiIn0%3D; expires=Tue, 01 Sep 2026 12:31:08 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+Set-Cookie: remember_web_59ba36addc2b2f9401580f014c7f58ea4e30989d=eyJpdiI6IkNjM3ZwQWdtOGcwK2o5RlpjUkJsM3c9PSIsInZhbHVlIjoiVEo1N2hFZ25GcERaME9Zc0xJTC8wbjY3RkhIcFY5dXhFcE5jUG5xLzNDY1RWUjV6Yy9hNWJoWVhpQ0hidjFaY0N2QkYrbGwvVXMxNFI0MmIwWEduUjVZSXo3bmszcWcyUDQ2R29WQ2wwRjhrSTk4UHVEWUxSbVUvdllwbzRackorYmRrd2JPV2h0cFYwakNmQWdPS1Rua2NKTXFsTzdMTFRWT1dlNHJBME9lVHZTazA0SEVLUDBIS0ZXbTFNMFBCSUdaNEZDRW5neEtVRUpBZ3hLbUVrS09NOW5UZWhPbTh3akplQWwwUzZxbz0iLCJtYWMiOiI4OGE4ODc4ZGU0MDQxMjVkYzRkNDQwYjcyZDU4ZTdkMGM5M2RlYWExZWEzOTI4MzE4ZTBkYjE3NDgzZmJiY2E0IiwidGFnIjoiIn0%3D; expires=Wed, 06 Oct 2027 10:31:08 GMT; Max-Age=34560000; path=/; httponly; samesite=lax
+
+HTTP/1.1 405 Method Not Allowed
+Host: 127.0.0.1:8000
+Connection: close
+X-Powered-By: PHP/8.2.12
+allow: GET, HEAD
+Cache-Control: no-cache, private
+date: Tue, 01 Sep 2026 10:31:09 GMT
+Content-Type: text/html; charset=utf-8
+

@@ -1,0 +1,10 @@
+HTTP/1.1 403 Forbidden
+Host: 127.0.0.1:8000
+Connection: close
+X-Powered-By: PHP/8.2.12
+Cache-Control: no-cache, private
+date: Tue, 01 Sep 2026 09:42:36 GMT
+Content-Type: text/html; charset=utf-8
+Set-Cookie: XSRF-TOKEN=eyJpdiI6IldLcVpWZUxwVGtlbVVUZnc0TjNXWHc9PSIsInZhbHVlIjoiZlBjK2N2SEp3cjJSNXNEZE5UU2JpeUFDaVFNbElkdWdoQk80MWovNFB2ZUNXd1Y2TGlzRmZGaG9Sd0VtSS9zb2E0aWRoUVRUcnlWbFlaTHJReDVrblFUWGtiTFo1Y1N1amhmYWIwdnp2VUZoMVg1aHlCaG1xREt4bkt2Z2lHck0iLCJtYWMiOiIyN2M4Y2U4MzRjM2E0MWMyNzUxYzQ5NzViZmJmZDkwNDE2MGIyNjgxOWFlN2ZiYzRjYWFmZTQ2OGM5ZWUwNDQzIiwidGFnIjoiIn0%3D; expires=Tue, 01 Sep 2026 11:42:36 GMT; Max-Age=7200; path=/; samesite=lax
+Set-Cookie: laravel-session=eyJpdiI6InJ3azk0VHRFYnZxSTh6bURTZkNYZGc9PSIsInZhbHVlIjoicWs1M1RydC9BOVVFSnVUZzRZZDlZSHdjcW1RY3ZoYklUVVpTRWdzM0FzRHJCMkVDZ0xFRFR5MGgzRXQvRnhybUwrZjhKcHFIaHlVVzgyZllidGx1RUR5emIwbnpLM2tCaVozU0c3aFBQd3VrTXVmWnRVbi9uUzhkYkRoYjJNY3AiLCJtYWMiOiJmNTRiNWUwNDI5M2I4YWJjYzA5MzM4N2NhYWJjYWZlMmUyNTVkN2M0MzRiMjQyZTI1MWFmYTQ5YWM5NWU4MWNiIiwidGFnIjoiIn0%3D; expires=Tue, 01 Sep 2026 11:42:36 GMT; Max-Age=7200; path=/; httponly; samesite=lax
+

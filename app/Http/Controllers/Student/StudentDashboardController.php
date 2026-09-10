@@ -27,7 +27,6 @@ class StudentDashboardController extends Controller
         $this->logbookService = $logbookService;
         $this->fieldService = $fieldService;
         $this->attendanceService = $attendanceService;
-        $this->middleware(['auth', 'role:student']);
     }
 
     /**
@@ -391,4 +390,88 @@ class StudentDashboardController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    /**
+     * Show Field Placement GPS Attendance page
+     */
+    public function fieldAttendance()
+    {
+        $user = auth()->user();
+        $student = $user->student;
+
+        $placement = $student ? $student->fieldPlacements()->where('status', 'active')->first() : null;
+
+        if (!$placement) {
+            return redirect()->route('student.dashboard')
+                ->with('warning', 'You do not have an active field placement.');
+        }
+
+        $attendances = $placement->fieldAttendances()
+            ->orderBy('attendance_date', 'desc')
+            ->paginate(15);
+
+        $todayAttendance = $placement->fieldAttendances()
+            ->where('attendance_date', today()->toDateString())
+            ->first();
+
+        $summary = $this->fieldService->getFieldAttendanceSummary($placement);
+
+        return view('student.field-attendance.index', compact('placement', 'attendances', 'todayAttendance', 'summary'));
+    }
+
+    /**
+     * Handle student GPS Check-in
+     */
+    public function checkInFieldAttendance(Request $request)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+            'notes' => 'nullable|string|max:500',
+        ]);
+
+        $user = auth()->user();
+        $student = $user->student;
+
+        $placement = $student ? $student->fieldPlacements()->where('status', 'active')->first() : null;
+
+        if (!$placement) {
+            return back()->withErrors(['error' => 'No active field placement found.']);
+        }
+
+        $studentLat = (float) $request->input('latitude');
+        $studentLon = (float) $request->input('longitude');
+
+        // Check geofence
+        $geofence = $this->fieldService->verifyGeofence($placement, $studentLat, $studentLon);
+
+        if (!$geofence['within_geofence']) {
+            return back()->withErrors([
+                'location' => 'GPS Verification Failed: ' . $geofence['message']
+            ])->withInput();
+        }
+
+        $today = today()->toDateString();
+        $existing = $placement->fieldAttendances()->where('attendance_date', $today)->first();
+
+        if ($existing && $existing->check_in_time) {
+            return back()->with('info', 'You have already checked in today at ' . $existing->check_in_time);
+        }
+
+        $now = now();
+        $status = $now->format('H:i') > '09:00' ? 'late' : 'present';
+
+        $this->fieldService->recordFieldAttendance($placement, [
+            'attendance_date' => $today,
+            'check_in_time' => $now->toTimeString(),
+            'status' => $status,
+            'latitude' => (string) $studentLat,
+            'longitude' => (string) $studentLon,
+            'notes' => $request->input('notes'),
+        ]);
+
+        return redirect()->route('student.field-attendance')
+            ->with('success', 'GPS Attendance verified and recorded! (' . $geofence['message'] . ')');
+    }
 }
+

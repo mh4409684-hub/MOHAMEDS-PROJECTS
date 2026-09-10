@@ -60,7 +60,18 @@ class User extends Authenticatable implements PasskeyUser
         'phone',
         'profile_picture',
         'is_active',
-        'last_login_at'
+        'last_login_at',
+        'two_factor_otp',
+        'two_factor_otp_expires_at',
+        'password_reset_otp',
+        'password_reset_otp_expires_at',
+    ];
+
+    protected $casts = [
+        'two_factor_otp_expires_at' => 'datetime',
+        'password_reset_otp_expires_at' => 'datetime',
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
     /**

@@ -22,10 +22,16 @@ class HostOrganization extends Model
         'contact_person',
         'contact_title',
         'description',
+        'latitude',
+        'longitude',
+        'geofence_radius_meters',
         'is_active',
     ];
 
     protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
+        'geofence_radius_meters' => 'integer',
         'is_active' => 'boolean',
     ];
 

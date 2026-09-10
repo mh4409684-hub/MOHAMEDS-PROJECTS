@@ -9,6 +9,14 @@ use App\Models\Programme;
 use App\Models\AcademicYear;
 use App\Models\Semester;
 use App\Models\HostOrganization;
+use App\Models\Section;
+use App\Models\Course;
+use App\Models\Student;
+use App\Models\Staff;
+use App\Models\FieldPlacement;
+use App\Models\FieldSupervisorAssignment;
+use App\Models\LogbookEntry;
+use App\Models\FieldAttendance;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
@@ -18,24 +26,20 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Create roles
+        // 1. Roles & Permissions
         $this->createRoles();
-
-        // Create permissions
         $this->createPermissions();
-
-        // Assign permissions to roles
         $this->assignPermissionsToRoles();
 
-        // Seed base data
+        // 2. Base data
         $this->seedCampuses();
         $this->seedAcademicData();
         $this->seedSuperAdminUser();
+
+        // 3. Complete Student, Supervisor & Lecturer test data
+        $this->seedUniversityUsersAndPlacements();
     }
 
     private function createRoles(): void
@@ -51,98 +55,40 @@ class DatabaseSeeder extends Seeder
     private function createPermissions(): void
     {
         $permissions = [
-            // User Management
             'view_users', 'create_users', 'edit_users', 'delete_users',
             'view_students', 'create_students', 'edit_students', 'delete_students',
             'view_staff', 'create_staff', 'edit_staff', 'delete_staff',
-
-            // E-Logbook
             'view_logbooks', 'create_logbook_entry', 'edit_logbook_entry', 'delete_logbook_entry',
             'submit_logbook', 'review_logbook', 'approve_logbook', 'reject_logbook',
             'view_weekly_reports', 'create_weekly_report', 'edit_weekly_report',
             'submit_weekly_report', 'review_weekly_report',
-
-            // Field Management
             'view_field_placements', 'create_field_placement', 'edit_field_placement',
             'manage_field_supervisor', 'view_field_attendance', 'record_field_attendance',
-
-            // Class Attendance
             'view_classes', 'create_class_session', 'edit_class_session', 'close_class_session',
             'view_class_attendance', 'mark_attendance', 'generate_attendance_code', 'generate_qr_code',
-
-            // Reports
             'view_reports', 'generate_reports', 'export_reports',
-
-            // Administration
             'manage_campuses', 'manage_departments', 'manage_programmes', 'manage_courses',
             'manage_sections', 'manage_academic_years', 'manage_semesters',
             'view_audit_logs', 'manage_roles_permissions', 'manage_notifications',
-
-            // General
             'view_dashboard', 'view_profile', 'edit_profile',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate([
-                'name' => $permission,
-                'guard_name' => 'web'
-            ]);
+            Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
     }
 
     private function assignPermissionsToRoles(): void
     {
-        // Super Admin - All permissions
         $superAdminRole = Role::where('name', 'super_admin')->first();
-        $superAdminRole->syncPermissions(Permission::all());
+        if ($superAdminRole) {
+            $superAdminRole->syncPermissions(Permission::all());
+        }
 
-        // Admin - All except super admin operations
         $adminRole = Role::where('name', 'admin')->first();
-        $adminPermissions = Permission::whereNotIn('name', [])->pluck('id');
-        $adminRole->syncPermissions($adminPermissions);
-
-        // Student
-        $studentRole = Role::where('name', 'student')->first();
-        $studentPermissions = Permission::whereIn('name', [
-            'view_dashboard', 'view_profile', 'edit_profile',
-            'view_logbooks', 'create_logbook_entry', 'edit_logbook_entry', 'submit_logbook',
-            'view_weekly_reports', 'create_weekly_report', 'edit_weekly_report', 'submit_weekly_report',
-            'view_field_placements', 'view_field_attendance', 'record_field_attendance',
-            'view_classes', 'view_class_attendance', 'mark_attendance',
-        ])->pluck('id');
-        $studentRole->syncPermissions($studentPermissions);
-
-        // Field Supervisor
-        $supervisorRole = Role::where('name', 'field_supervisor')->first();
-        $supervisorPermissions = Permission::whereIn('name', [
-            'view_dashboard', 'view_profile',
-            'view_logbooks', 'review_logbook', 'approve_logbook', 'reject_logbook',
-            'view_weekly_reports', 'review_weekly_report',
-            'view_field_placements', 'view_field_attendance',
-            'view_reports', 'generate_reports',
-        ])->pluck('id');
-        $supervisorRole->syncPermissions($supervisorPermissions);
-
-        // Lecturer
-        $lecturerRole = Role::where('name', 'lecturer')->first();
-        $lecturerPermissions = Permission::whereIn('name', [
-            'view_dashboard', 'view_profile',
-            'view_classes', 'create_class_session', 'edit_class_session', 'close_class_session',
-            'view_class_attendance', 'mark_attendance', 'generate_attendance_code', 'generate_qr_code',
-            'view_reports', 'generate_reports',
-        ])->pluck('id');
-        $lecturerRole->syncPermissions($lecturerPermissions);
-
-        // Field Coordinator
-        $coordinatorRole = Role::where('name', 'field_coordinator')->first();
-        $coordinatorPermissions = Permission::whereIn('name', [
-            'view_dashboard', 'view_profile',
-            'view_field_placements', 'manage_field_supervisor',
-            'view_field_attendance',
-            'view_logbooks', 'view_weekly_reports',
-            'view_reports', 'generate_reports',
-        ])->pluck('id');
-        $coordinatorRole->syncPermissions($coordinatorPermissions);
+        if ($adminRole) {
+            $adminRole->syncPermissions(Permission::all());
+        }
     }
 
     private function seedCampuses(): void
@@ -161,7 +107,6 @@ class DatabaseSeeder extends Seeder
 
     private function seedAcademicData(): void
     {
-        // Create academic years
         $academicYear = AcademicYear::firstOrCreate(
             ['year' => '2025/2026'],
             [
@@ -172,13 +117,12 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // Create semesters
         Semester::firstOrCreate(
             ['academic_year_id' => $academicYear->id, 'semester_number' => 1],
             [
                 'name' => 'Semester 1',
                 'start_date' => $academicYear->start_date,
-                'end_date' => $academicYear->start_date->addMonths(4),
+                'end_date' => $academicYear->start_date->copy()->addMonths(4),
                 'is_active' => true,
             ]
         );
@@ -187,29 +131,21 @@ class DatabaseSeeder extends Seeder
             ['academic_year_id' => $academicYear->id, 'semester_number' => 2],
             [
                 'name' => 'Semester 2',
-                'start_date' => $academicYear->start_date->addMonths(5),
+                'start_date' => $academicYear->start_date->copy()->addMonths(5),
                 'end_date' => $academicYear->end_date,
                 'is_active' => false,
             ]
         );
 
-        // Get Dar es Salaam campus
         $campus = Campus::where('code', 'DES')->first();
 
         if ($campus) {
-            // Create departments
             $itDept = Department::firstOrCreate(
                 ['code' => 'IT', 'campus_id' => $campus->id],
                 ['name' => 'Information Technology', 'is_active' => true]
             );
 
-            $businessDept = Department::firstOrCreate(
-                ['code' => 'BUS', 'campus_id' => $campus->id],
-                ['name' => 'Business', 'is_active' => true]
-            );
-
-            // Create programmes
-            Programme::firstOrCreate(
+            $prog = Programme::firstOrCreate(
                 ['code' => 'BIT', 'department_id' => $itDept->id],
                 [
                     'name' => 'Bachelor of Information Technology',
@@ -219,22 +155,57 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
-            // Create host organizations
-            HostOrganization::firstOrCreate(
-                ['name' => 'TechCorp Tanzania'],
+            // Section
+            Section::firstOrCreate(
+                ['code' => 'BIT-Y3-A'],
                 [
-                    'industry' => 'Information Technology',
-                    'city' => 'Dar es Salaam',
-                    'contact_person' => 'John Doe',
+                    'name' => 'BIT Year 3 - Section A',
+                    'programme_id' => $prog->id,
+                    'campus_id' => $campus->id,
+                    'year_level' => 3,
+                    'section_letter' => 'A',
+                    'capacity' => 60,
                     'is_active' => true,
                 ]
             );
 
-            HostOrganization::firstOrCreate(
+            // Course
+            Course::firstOrCreate(
+                ['code' => 'CS301', 'programme_id' => $prog->id],
+                [
+                    'name' => 'Enterprise System Development',
+                    'credit_hours' => 3,
+                    'year_level' => 3,
+                    'is_active' => true,
+                ]
+            );
+
+            // Host Organization with GPS coordinates (Dar es Salaam center coordinates)
+            HostOrganization::updateOrCreate(
+                ['name' => 'TechCorp Tanzania'],
+                [
+                    'industry' => 'Information Technology',
+                    'address' => 'Bibi Titi Mohamed Rd',
+                    'city' => 'Dar es Salaam',
+                    'latitude' => -6.816064,
+                    'longitude' => 39.280358,
+                    'geofence_radius_meters' => 500,
+                    'contact_person' => 'John Doe',
+                    'phone' => '+255 712 345 678',
+                    'email' => 'hr@techcorp.co.tz',
+                    'is_active' => true,
+                ]
+            );
+
+            HostOrganization::updateOrCreate(
                 ['name' => 'Banking Solutions Ltd'],
                 [
-                    'industry' => 'Banking',
+                    'industry' => 'Banking & Finance',
+                    'address' => 'Samora Avenue',
                     'city' => 'Dar es Salaam',
+                    'latitude' => -6.815200,
+                    'longitude' => 39.289000,
+                    'geofence_radius_meters' => 300,
                     'contact_person' => 'Jane Smith',
                     'is_active' => true,
                 ]
@@ -256,6 +227,150 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        $superAdmin->assignRole('super_admin');
+        $superAdmin->syncRoles(['super_admin']);
+    }
+
+    private function seedUniversityUsersAndPlacements(): void
+    {
+        $campus = Campus::where('code', 'DES')->first();
+        $academicYear = AcademicYear::where('is_current', true)->first();
+        $programme = Programme::where('code', 'BIT')->first();
+        $section = Section::first();
+        $techCorp = HostOrganization::where('name', 'TechCorp Tanzania')->first();
+
+        // 1. Supervisor User
+        $supervisorUser = User::firstOrCreate(
+            ['email' => 'supervisor@cbe.ac.tz'],
+            [
+                'name' => 'Dr. Amani Supervisor',
+                'username' => 'supervisor',
+                'password' => bcrypt('Supervisor@2025'),
+                'registration_number' => 'STF-001',
+                'campus_id' => $campus?->id,
+                'phone' => '+255 754 000 002',
+                'is_active' => true,
+            ]
+        );
+        $supervisorUser->syncRoles(['field_supervisor']);
+
+        $staff = Staff::firstOrCreate(
+            ['user_id' => $supervisorUser->id],
+            [
+                'campus_id' => $campus?->id,
+                'department_id' => $programme?->department_id,
+                'staff_type' => 'supervisor',
+                'designation' => 'Senior Field Supervisor',
+                'employment_date' => now()->subYears(2),
+                'employment_status' => 'active',
+            ]
+        );
+
+        // 2. Student User
+        $studentUser = User::firstOrCreate(
+            ['email' => 'student@cbe.ac.tz'],
+            [
+                'name' => 'Mohamedy Student',
+                'username' => 'mohamedy',
+                'password' => bcrypt('Student@2025'),
+                'registration_number' => 'CBE/BIT/2026/042',
+                'campus_id' => $campus?->id,
+                'phone' => '+255 788 000 003',
+                'is_active' => true,
+            ]
+        );
+        $studentUser->syncRoles(['student']);
+
+        $student = Student::firstOrCreate(
+            ['user_id' => $studentUser->id],
+            [
+                'programme_id' => $programme?->id,
+                'section_id' => $section?->id,
+                'campus_id' => $campus?->id,
+                'academic_year_id' => $academicYear?->id,
+                'year_of_study' => 3,
+                'enrollment_status' => 'active',
+                'enrollment_date' => now()->subMonths(6),
+            ]
+        );
+
+        // 3. Field Placement
+        $placement = FieldPlacement::firstOrCreate(
+            [
+                'student_id' => $student->id,
+                'host_organization_id' => $techCorp->id,
+                'academic_year_id' => $academicYear->id,
+            ],
+            [
+                'start_date' => now()->subDays(14)->toDateString(),
+                'end_date' => now()->addDays(46)->toDateString(),
+                'status' => 'active',
+                'total_days' => 60,
+                'days_completed' => 10,
+                'field_progress' => 16.67,
+            ]
+        );
+
+        // 4. Supervisor Assignment
+        FieldSupervisorAssignment::firstOrCreate(
+            [
+                'field_placement_id' => $placement->id,
+                'supervisor_staff_id' => $staff->id,
+            ],
+            [
+                'assigned_date' => now()->subDays(14)->toDateString(),
+                'status' => 'active',
+            ]
+        );
+
+        // 5. Sample Logbook Entries
+        LogbookEntry::firstOrCreate(
+            [
+                'field_placement_id' => $placement->id,
+                'activity_date' => now()->subDays(1)->toDateString(),
+            ],
+            [
+                'hours_worked' => 8,
+                'activity_description' => 'Configured local development server environment and set up MySQL database schema for employee records.',
+                'skills_learned' => 'Database migration, Apache vhost routing, PHP 8.2 configurations.',
+                'challenges' => 'Permission denial during file uploads on Ubuntu testing server.',
+                'solutions' => 'Set www-data group permissions and configured Laravel storage symlink.',
+                'status' => 'submitted',
+                'submitted_at' => now()->subDays(1),
+            ]
+        );
+
+        LogbookEntry::firstOrCreate(
+            [
+                'field_placement_id' => $placement->id,
+                'activity_date' => now()->subDays(2)->toDateString(),
+            ],
+            [
+                'hours_worked' => 8,
+                'activity_description' => 'Attended orientation with IT department team lead. Introduced to internal networks and security policies.',
+                'skills_learned' => 'Workplace safety, corporate network topology, ticketing systems.',
+                'challenges' => 'Initial credential activation delay.',
+                'solutions' => 'Liaised with SysAdmin to issue token.',
+                'status' => 'approved',
+                'submitted_at' => now()->subDays(2),
+                'approved_at' => now()->subDays(1),
+                'supervisor_comments' => 'Good start. Maintain proactive communication.',
+            ]
+        );
+
+        // 6. Sample Field Attendance (GPS verified)
+        FieldAttendance::firstOrCreate(
+            [
+                'field_placement_id' => $placement->id,
+                'attendance_date' => now()->subDays(1)->toDateString(),
+            ],
+            [
+                'check_in_time' => '08:15:00',
+                'check_out_time' => '16:30:00',
+                'status' => 'present',
+                'latitude' => '-6.816064',
+                'longitude' => '39.280358',
+                'notes' => 'On-site check-in at TechCorp IT center',
+            ]
+        );
     }
 }

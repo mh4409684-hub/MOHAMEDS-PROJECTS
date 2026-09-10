@@ -247,4 +247,59 @@ class FieldManagementService
 
         return $placement->refresh();
     }
+
+    /**
+     * Calculate distance in meters between two GPS coordinate points using Haversine formula
+     */
+    public function calculateDistanceMeters(float $lat1, float $lon1, float $lat2, float $lon2): float
+    {
+        $earthRadius = 6371000; // meters
+
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lonDelta = deg2rad($lon2 - $lon1);
+
+        $a = sin($latDelta / 2) * sin($latDelta / 2) +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+             sin($lonDelta / 2) * sin($lonDelta / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return round($earthRadius * $c, 1);
+    }
+
+    /**
+     * Verify if given coordinates are within the organization geofence
+     */
+    public function verifyGeofence(FieldPlacement $placement, float $studentLat, float $studentLon): array
+    {
+        $org = $placement->hostOrganization;
+
+        if (!$org || !$org->latitude || !$org->longitude) {
+            return [
+                'within_geofence' => true,
+                'distance' => 0,
+                'message' => 'No GPS coordinate baseline configured for host organization.',
+            ];
+        }
+
+        $distance = $this->calculateDistanceMeters(
+            $studentLat,
+            $studentLon,
+            (float) $org->latitude,
+            (float) $org->longitude
+        );
+
+        $allowedRadius = $org->geofence_radius_meters ?: 300;
+        $isWithin = $distance <= $allowedRadius;
+
+        return [
+            'within_geofence' => $isWithin,
+            'distance' => $distance,
+            'allowed_radius' => $allowedRadius,
+            'message' => $isWithin
+                ? "Location verified successfully ({$distance}m from host premises)."
+                : "You are {$distance}m away from {$org->name}. Max allowed radius is {$allowedRadius}m.",
+        ];
+    }
 }
+

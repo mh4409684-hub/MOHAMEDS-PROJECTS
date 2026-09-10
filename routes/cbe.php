@@ -8,10 +8,21 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Auth\CBELoginController;
 
-// CBE Login Routes
+// CBE Authentication & Security Routes
 Route::get('/cbe/login', [CBELoginController::class, 'showLoginForm'])->name('cbe.login');
 Route::post('/cbe/login', [CBELoginController::class, 'login'])->name('cbe.login.store');
 Route::post('/cbe/logout', [CBELoginController::class, 'logout'])->name('cbe.logout');
+
+// 2FA Admin Verification Routes
+Route::get('/cbe/verify-2fa', [CBELoginController::class, 'show2faForm'])->name('cbe.verify-2fa');
+Route::post('/cbe/verify-2fa', [CBELoginController::class, 'verify2fa'])->name('cbe.verify-2fa.store');
+Route::post('/cbe/resend-2fa', [CBELoginController::class, 'resend2fa'])->name('cbe.resend-2fa');
+
+// Forgot Password & Reset Routes
+Route::get('/cbe/forgot-password', [CBELoginController::class, 'showForgotPasswordForm'])->name('cbe.forgot-password');
+Route::post('/cbe/forgot-password', [CBELoginController::class, 'sendResetOtp'])->name('cbe.forgot-password.store');
+Route::get('/cbe/reset-password', [CBELoginController::class, 'showResetPasswordForm'])->name('cbe.reset-password');
+Route::post('/cbe/reset-password', [CBELoginController::class, 'resetPassword'])->name('cbe.reset-password.store');
 
 Route::middleware(['auth'])->group(function () {
     
@@ -63,8 +74,9 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     // Academic Management
     Route::get('/academic-settings', [AdminDashboardController::class, 'academicSettings'])->name('academic-settings');
     
-    // Field Placements
+    // Field Placements & Supervisor Assignment
     Route::get('/field-placements', [AdminDashboardController::class, 'fieldPlacements'])->name('field-placements');
+    Route::post('/field-placements/{placement}/assign-supervisor', [AdminDashboardController::class, 'assignSupervisorToPlacement'])->name('field-placements.assign-supervisor');
     
     // Reports
     Route::get('/reports', [AdminDashboardController::class, 'reports'])->name('reports');
@@ -99,6 +111,10 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/class-attendance', [StudentDashboardController::class, 'classAttendance'])->name('class-attendance');
     Route::post('/class-attendance/mark', [StudentDashboardController::class, 'markAttendanceCode'])->name('mark-attendance');
     
+    // Field Placement Attendance (GPS)
+    Route::get('/field-attendance', [StudentDashboardController::class, 'fieldAttendance'])->name('field-attendance');
+    Route::post('/field-attendance/checkin', [StudentDashboardController::class, 'checkInFieldAttendance'])->name('field-attendance.checkin');
+
     // Notifications
     Route::get('/notifications', [StudentDashboardController::class, 'notifications'])->name('notifications');
     Route::post('/notifications/{notification}/mark-read', [StudentDashboardController::class, 'markNotificationRead'])->name('mark-notification-read');

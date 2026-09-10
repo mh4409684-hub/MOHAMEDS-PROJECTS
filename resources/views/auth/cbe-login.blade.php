@@ -45,10 +45,15 @@
                     </div>
 
                     <!-- Password Field -->
-                    <div class="mb-6">
-                        <label for="password" class="block text-gray-700 font-medium mb-2">
-                            Password
-                        </label>
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="password" class="block text-gray-700 font-medium">
+                                Password
+                            </label>
+                            <a href="{{ route('cbe.forgot-password') }}" class="text-xs text-blue-600 hover:text-blue-800 font-semibold transition">
+                                Forgot password?
+                            </a>
+                        </div>
                         <input
                             type="password"
                             id="password"
@@ -70,14 +75,25 @@
 
                 <!-- Demo Credentials -->
                 <div class="mt-8 pt-6 border-t border-gray-200">
-                    <p class="text-gray-600 text-sm font-medium mb-3">Demo Credentials:</p>
-                    <div class="bg-gray-50 rounded-lg p-3 space-y-2 text-sm">
-                        <div>
-                            <p class="text-gray-600"><strong>Email:</strong> superadmin@cbe.ac.tz</p>
-                            <p class="text-gray-600"><strong>Password:</strong> SuperAdmin@2025</p>
-                        </div>
+                    <p class="text-gray-600 text-xs font-bold uppercase tracking-wider mb-3">Quick Login (1-Click Fill):</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button type="button" onclick="fillLogin('mh4409684@gmail.com', 'mobili2004')" class="text-left p-2.5 rounded-lg border-2 border-blue-400 bg-blue-50/50 hover:bg-blue-100 transition">
+                            <span class="block text-xs font-black text-blue-900">👑 Mohamedy (Admin)</span>
+                            <span class="block text-[10px] text-blue-700">mh4409684@gmail.com</span>
+                        </button>
+                        <button type="button" onclick="fillLogin('student@cbe.ac.tz', 'Student@2025')" class="text-left p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 transition">
+                            <span class="block text-xs font-bold text-slate-800">🎓 Student (Demo)</span>
+                            <span class="block text-[10px] text-slate-500">student@cbe.ac.tz</span>
+                        </button>
                     </div>
                 </div>
+
+                <script>
+                    function fillLogin(email, password) {
+                        document.getElementById('email').value = email;
+                        document.getElementById('password').value = password;
+                    }
+                </script>
             </div>
         </div>
 

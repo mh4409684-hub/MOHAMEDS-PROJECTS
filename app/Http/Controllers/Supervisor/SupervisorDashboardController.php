@@ -22,7 +22,6 @@ class SupervisorDashboardController extends Controller
     ) {
         $this->logbookService = $logbookService;
         $this->fieldService = $fieldService;
-        $this->middleware(['auth', 'role:field_supervisor']);
     }
 
     /**

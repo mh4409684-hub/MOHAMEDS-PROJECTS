@@ -282,7 +282,7 @@ class AdminDashboardController extends Controller
      */
     public function fieldPlacements(Request $request)
     {
-        $query = FieldPlacement::with('student.user', 'hostOrganization', 'academicYear');
+        $query = FieldPlacement::with(['student.user', 'hostOrganization', 'academicYear', 'supervisorAssignments.supervisor.user']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
@@ -296,8 +296,34 @@ class AdminDashboardController extends Controller
 
         $placements = $query->paginate(15);
         $campuses = Campus::all();
+        $supervisors = Staff::with('user')->whereIn('staff_type', ['supervisor', 'lecturer', 'admin'])->get();
 
-        return view('admin.field-placements.index', compact('placements', 'campuses'));
+        return view('admin.field-placements.index', compact('placements', 'campuses', 'supervisors'));
+    }
+
+    /**
+     * Assign supervisor to field placement
+     */
+    public function assignSupervisorToPlacement(Request $request, FieldPlacement $placement)
+    {
+        $request->validate([
+            'supervisor_staff_id' => 'required|exists:staff,id',
+        ]);
+
+        // Deactivate previous
+        $placement->supervisorAssignments()->where('status', 'active')->update([
+            'status' => 'reassigned',
+            'unassigned_date' => now(),
+        ]);
+
+        \App\Models\FieldSupervisorAssignment::create([
+            'field_placement_id' => $placement->id,
+            'supervisor_staff_id' => $request->input('supervisor_staff_id'),
+            'assigned_date' => now(),
+            'status' => 'active',
+        ]);
+
+        return back()->with('success', 'Field supervisor assigned successfully! The student now appears immediately in the supervisor\'s account.');
     }
 
     /**

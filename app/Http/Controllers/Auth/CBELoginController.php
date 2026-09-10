@@ -4,6 +4,10 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Student;
+use App\Models\Campus;
+use App\Models\Programme;
+use App\Models\AcademicYear;
 use App\Mail\CollegeSecurityMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +16,62 @@ use Illuminate\Support\Facades\Mail;
 
 class CBELoginController extends Controller
 {
+    /**
+     * Show the student registration form
+     */
+    public function showRegisterForm()
+    {
+        $campuses = Campus::where('is_active', true)->get();
+        $programmes = Programme::where('is_active', true)->get();
+        return view('auth.cbe-register', compact('campuses', 'programmes'));
+    }
+
+    /**
+     * Handle student self-registration
+     */
+    public function register(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'registration_number' => 'required|string|max:100|unique:users,registration_number',
+            'email' => 'required|email|max:255|unique:users,email',
+            'username' => 'required|string|max:100|unique:users,username',
+            'phone' => 'nullable|string|max:20',
+            'campus_id' => 'required|exists:campuses,id',
+            'programme_id' => 'required|exists:programmes,id',
+            'year_of_study' => 'required|integer|min:1|max:4',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = User::create([
+            'name' => $validated['name'],
+            'username' => $validated['username'],
+            'registration_number' => $validated['registration_number'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'campus_id' => $validated['campus_id'],
+            'password' => $validated['password'],
+            'is_active' => false, // Pending Admin Approval
+        ]);
+
+        $user->assignRole('student');
+
+        $currentYear = AcademicYear::where('is_current', true)->first() ?? AcademicYear::first();
+
+        Student::create([
+            'user_id' => $user->id,
+            'campus_id' => $validated['campus_id'],
+            'programme_id' => $validated['programme_id'],
+            'year_of_study' => $validated['year_of_study'],
+            'academic_year_id' => $currentYear ? $currentYear->id : null,
+            'enrollment_status' => 'pending_approval',
+            'enrollment_date' => now(),
+            'notes' => 'Self-registered student awaiting administrator verification and approval.',
+        ]);
+
+        return redirect()->route('cbe.login')->with('success', 'Usajili wako umepokelewa kikamilifu! Akaunti yako sasa inasubiri uhakiki na idhini kutoka kwa Mkuu wa Mfumo (Admin). Mara tu itakapoidhinishwa, utatumiwa barua pepe na utaweza kuingia.');
+    }
+
     /**
      * Show the login form
      */
@@ -38,6 +98,13 @@ class CBELoginController extends Controller
             ])->onlyInput('email');
         }
 
+        // Check if student is active / approved
+        if (!$user->is_active) {
+            return back()->withErrors([
+                'email' => 'Akaunti yako haijawashwa au bado inasubiri idhini (Approval) kutoka kwa Mkuu wa Chuo / Mfumo (Admin). Tafadhali subiri utumiwe taarifa kwenye email yako pindi itakapoidhinishwa.',
+            ])->onlyInput('email');
+        }
+
         // Check if Admin requires 2FA OTP verification
         if ($user->hasRole(['super_admin', 'admin'])) {
             $otp = (string) random_int(100000, 999999);
@@ -61,7 +128,6 @@ class CBELoginController extends Controller
             session([
                 'cbe_2fa_user_id' => $user->id,
                 'cbe_2fa_remember' => $request->boolean('remember'),
-                'cbe_last_otp_preview' => $otp, // Useful preview for testing
             ]);
 
             return redirect()->route('cbe.verify-2fa')
@@ -161,7 +227,7 @@ class CBELoginController extends Controller
             \Log::error('Resend OTP error: ' . $e->getMessage());
         }
 
-        session(['cbe_last_otp_preview' => $otp]);
+
 
         return back()->with('success', 'A new verification code has been dispatched to your email.');
     }
@@ -180,12 +246,32 @@ class CBELoginController extends Controller
     public function sendResetOtp(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email',
-        ], [
-            'email.exists' => 'No university account found with this email address.',
+            'username' => 'required|string',
+            'email' => 'required|email',
         ]);
 
-        $user = User::where('email', $request->input('email'))->first();
+        $usernameInput = trim($request->input('username'));
+        $emailInput = trim($request->input('email'));
+
+        // Check if user exists by username or registration_number
+        $user = User::where(function ($q) use ($usernameInput) {
+            $q->where('username', $usernameInput)
+              ->orWhere('registration_number', $usernameInput);
+        })->first();
+
+        if (!$user) {
+            return back()->withErrors([
+                'username' => 'Wrong username: No university account matches this Username / Registration number.',
+            ])->withInput();
+        }
+
+        // Verify that the email matches the username
+        if (strcasecmp($user->email, $emailInput) !== 0) {
+            return back()->withErrors([
+                'email' => 'Wrong email: The email provided does not match the registered account email for this user.',
+            ])->withInput();
+        }
+
         $otp = (string) random_int(100000, 999999);
 
         $user->update([
@@ -206,7 +292,6 @@ class CBELoginController extends Controller
 
         session([
             'cbe_reset_email' => $user->email,
-            'cbe_last_reset_preview' => $otp,
         ]);
 
         return redirect()->route('cbe.reset-password')

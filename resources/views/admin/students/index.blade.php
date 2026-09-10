@@ -1,13 +1,23 @@
-﻿<x-layouts.cbe title="Students Management - CBE Portal">
+<x-layouts.cbe title="Students Management - CBE Portal">
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
             <div>
                 <h1 class="text-2xl font-black text-slate-900">Student Directory</h1>
-                <p class="text-xs text-slate-500 mt-1">Manage enrolled students and view their academic & placement progress.</p>
+                <p class="text-xs text-slate-500 mt-1">Manage enrolled students and review self-registered applications.</p>
             </div>
-            <a href="{{ route('admin.students.create') }}" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow transition">
-                <i class="fa-solid fa-user-plus mr-1.5"></i> Add New Student
-            </a>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('admin.students.pending') }}" class="relative inline-flex items-center px-4 py-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs border border-amber-300 shadow-sm transition">
+                    <i class="fa-solid fa-user-clock mr-1.5 text-amber-600"></i> Pending Self-Registrations
+                    @if(isset($pendingCount) && $pendingCount > 0)
+                        <span class="ml-2 px-2 py-0.5 rounded-full bg-amber-600 text-white text-[10px] font-black">
+                            {{ $pendingCount }}
+                        </span>
+                    @endif
+                </a>
+                <a href="{{ route('admin.students.create') }}" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow transition">
+                    <i class="fa-solid fa-user-plus mr-1.5"></i> Add New Student
+                </a>
+            </div>
         </div>
 
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">

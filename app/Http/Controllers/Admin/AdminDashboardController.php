@@ -17,6 +17,8 @@ use App\Models\Section;
 use App\Models\AcademicYear;
 use App\Services\StudentService;
 use App\Services\StaffService;
+use App\Mail\CollegeSecurityMail;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
@@ -97,8 +99,76 @@ class AdminDashboardController extends Controller
         $students = $query->paginate(15);
         $campuses = Campus::all();
         $programmes = Programme::all();
+        $pendingCount = Student::where('enrollment_status', 'pending_approval')
+            ->orWhereHas('user', function($q) {
+                $q->where('is_active', false);
+            })->count();
 
-        return view('admin.students.index', compact('students', 'campuses', 'programmes'));
+        return view('admin.students.index', compact('students', 'campuses', 'programmes', 'pendingCount'));
+    }
+
+    /**
+     * View pending student self-registrations
+     */
+    public function pendingStudents()
+    {
+        $pendingStudents = Student::with('user', 'programme', 'campus')
+            ->where('enrollment_status', 'pending_approval')
+            ->orWhereHas('user', function($q) {
+                $q->where('is_active', false);
+            })
+            ->latest()
+            ->paginate(15);
+
+        return view('admin.students.pending', compact('pendingStudents'));
+    }
+
+    /**
+     * Approve pending student registration
+     */
+    public function approveStudent(Student $student)
+    {
+        $user = $student->user;
+
+        // Activate User & Update enrollment status
+        $user->update([
+            'is_active' => true,
+            'email_verified_at' => now(),
+        ]);
+
+        $student->update([
+            'enrollment_status' => 'enrolled',
+            'notes' => 'Self-registration approved by CBE Administrator on ' . now()->toFormattedDateString(),
+        ]);
+
+        // Send confirmation email to student
+        try {
+            Mail::to($user->email)->send(new CollegeSecurityMail(
+                $user,
+                'CBE Portal - Taarifa ya Kukubaliwa Usajili Wako wa Mfumo',
+                '',
+                'approval',
+                route('cbe.login')
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Could not send student approval email: ' . $e->getMessage());
+        }
+
+        return back()->with('success', "Usajili wa mwanafunzi {$user->name} ({$user->registration_number}) umekubaliwa kikamilifu na barua pepe ya uthibitisho imetumwa kwenda {$user->email}!");
+    }
+
+    /**
+     * Reject pending student registration
+     */
+    public function rejectStudent(Student $student)
+    {
+        $user = $student->user;
+        $name = $user->name;
+        
+        $student->delete();
+        $user->delete();
+
+        return back()->with('success', "Ombi la mwanafunzi {$name} limekataliwa na kuondolewa kwenye mfumo.");
     }
 
     /**

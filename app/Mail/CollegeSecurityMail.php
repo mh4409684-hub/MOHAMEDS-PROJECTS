@@ -17,13 +17,15 @@ class CollegeSecurityMail extends Mailable
     public string $subjectText;
     public string $code;
     public string $actionType;
+    public ?string $actionUrl;
 
-    public function __construct(User $user, string $subjectText, string $code, string $actionType = '2fa')
+    public function __construct(User $user, string $subjectText, string $code = '', string $actionType = '2fa', ?string $actionUrl = null)
     {
         $this->user = $user;
         $this->subjectText = $subjectText;
         $this->code = $code;
         $this->actionType = $actionType;
+        $this->actionUrl = $actionUrl;
     }
 
     public function envelope(): Envelope

@@ -18,19 +18,39 @@
 
             @if($actionType === '2fa')
                 <p style="font-size: 14px;">An administrative sign-in was attempted for your account. To proceed, please enter the following single-use Two-Factor Authentication (OTP) security code:</p>
+                <!-- Code Display Box -->
+                <div style="text-align: center; margin: 25px 0;">
+                    <div style="display: inline-block; padding: 14px 28px; background-color: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px;">
+                        <span style="font-family: 'Courier New', monospace; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #1d4ed8;">
+                            {{ $code }}
+                        </span>
+                    </div>
+                    <p style="font-size: 12px; color: #64748b; margin-top: 8px;">(This code is valid for 10 minutes)</p>
+                </div>
+            @elseif($actionType === 'approval')
+                <p style="font-size: 14px; color: #065f46; background-color: #ecfdf5; padding: 14px; border-radius: 10px; border: 1px solid #a7f3d0;">
+                    🎉 <strong>Hongera!</strong> Ombi lako la kujisajili kama mwanafunzi wa <strong>College of Business Education (CBE)</strong> limehakikiwa na <strong>limekubaliwa rasmi</strong> na Mkuu wa Mfumo (Admin).
+                </p>
+                <p style="font-size: 14px; margin-top: 15px;">
+                    Akaunti yako sasa iko hai (Activated) na imethibitishwa. Unaweza kuingia kwenye mfumo na kuanza kurekodi E-Logbook, GPS Attendance, na kuwasiliana na Supervisor wako.
+                </p>
+                <div style="text-align: center; margin: 25px 0;">
+                    <a href="{{ $actionUrl ?? url('/cbe/login') }}" style="display: inline-block; padding: 14px 28px; background-color: #2563eb; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 10px; font-size: 15px; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);">
+                        Ingia Kwenye CBE Portal &rarr;
+                    </a>
+                </div>
             @else
                 <p style="font-size: 14px;">A password reset request was initiated for your university account. Use the verification code below to reset your password:</p>
-            @endif
-
-            <!-- Code Display Box -->
-            <div style="text-align: center; margin: 25px 0;">
-                <div style="display: inline-block; padding: 14px 28px; background-color: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px;">
-                    <span style="font-family: 'Courier New', monospace; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #1d4ed8;">
-                        {{ $code }}
-                    </span>
+                <!-- Code Display Box -->
+                <div style="text-align: center; margin: 25px 0;">
+                    <div style="display: inline-block; padding: 14px 28px; background-color: #eff6ff; border: 2px dashed #3b82f6; border-radius: 12px;">
+                        <span style="font-family: 'Courier New', monospace; font-size: 32px; font-weight: 800; letter-spacing: 6px; color: #1d4ed8;">
+                            {{ $code }}
+                        </span>
+                    </div>
+                    <p style="font-size: 12px; color: #64748b; margin-top: 8px;">(This code is valid for 10 minutes)</p>
                 </div>
-                <p style="font-size: 12px; color: #64748b; margin-top: 8px;">(This code is valid for 10 minutes)</p>
-            </div>
+            @endif
 
             <p style="font-size: 13px; color: #64748b; border-top: 1px solid #f1f5f9; padding-top: 15px;">
                 If you did not request this action, please contact the CBE IT Systems Administrator immediately at <strong>ict-support@cbe.ac.tz</strong>.

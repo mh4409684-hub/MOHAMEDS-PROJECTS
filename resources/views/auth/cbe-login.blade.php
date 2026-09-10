@@ -2,9 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CBE E-Logbook System - Login</title>
+    
+    <!-- PWA & Mobile Web App Meta -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CBE Portal">
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration failed:', err));
+            });
+        }
+    </script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center">
     <div class="w-full max-w-md">
@@ -71,7 +88,57 @@
                     >
                         Sign In
                     </button>
+
+                    <!-- Student Self-Registration Link -->
+                    <div class="mt-4 pt-4 border-t border-dashed border-gray-200 text-center">
+                        <p class="text-xs text-gray-500">
+                            Are you a new student without an account?
+                        </p>
+                        <a href="{{ route('cbe.register') }}" class="inline-flex items-center gap-1.5 mt-1 text-xs font-black text-blue-600 hover:text-blue-800 hover:underline">
+                            <i class="fa-solid fa-user-plus"></i> Click Here to Register New Student Account &rarr;
+                        </a>
+                    </div>
+
+                    <!-- Install Mobile App Banner -->
+                    <div id="pwa-install-banner" class="mt-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 text-center">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2 text-left">
+                                <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center text-sm shadow">
+                                    <i class="fa-solid fa-mobile-screen"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-800">Tumia Kama App Ya Simu</h4>
+                                    <p class="text-[10px] text-slate-500">Install moja kwa moja kwenye simu yako</p>
+                                </div>
+                            </div>
+                            <button id="pwa-install-btn" type="button" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] rounded-lg shadow transition">
+                                Pakua App
+                            </button>
+                        </div>
+                    </div>
                 </form>
+
+                <script>
+                    let deferredPrompt;
+                    const installBanner = document.getElementById('pwa-install-banner');
+                    const installBtn = document.getElementById('pwa-install-btn');
+
+                    window.addEventListener('beforeinstallprompt', (e) => {
+                        e.preventDefault();
+                        deferredPrompt = e;
+                        installBanner.style.display = 'block';
+                    });
+
+                    installBtn.addEventListener('click', async () => {
+                        if (deferredPrompt) {
+                            deferredPrompt.prompt();
+                            const { outcome } = await deferredPrompt.userChoice;
+                            deferredPrompt = null;
+                        } else {
+                            alert("Kuweka app hii kwenye simu yako:\n1. Bonyeza vitone 3 vya juu vya Chrome kwenye simu yako (⋮)\n2. Chagua 'Install App' au 'Add to Home Screen'\n\nItajifungua na kufanya kazi kama app ya kawaida!");
+                        }
+                    });
+                </script>
 
                 <!-- Demo Credentials -->
                 <div class="mt-8 pt-6 border-t border-gray-200">

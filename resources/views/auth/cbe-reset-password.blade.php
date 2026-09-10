@@ -34,16 +34,7 @@
                     </div>
                 @endif
 
-                @if(session('cbe_last_reset_preview'))
-                    <div class="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 text-center">
-                        <span class="text-[11px] font-bold text-amber-800 uppercase tracking-wider block mb-1">
-                            <i class="fa-solid fa-envelope-open-text mr-1"></i> Dispatched Reset Code:
-                        </span>
-                        <span class="font-mono text-2xl font-black tracking-[0.25em] text-slate-900 bg-white px-4 py-1.5 rounded-xl border border-amber-300 shadow-sm inline-block">
-                            {{ session('cbe_last_reset_preview') }}
-                        </span>
-                    </div>
-                @endif
+
 
                 <form method="POST" action="{{ route('cbe.reset-password.store') }}" class="space-y-4">
                     @csrf

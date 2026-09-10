@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: cbe-elogbook-portal
+    env: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_NAME
+        value: "College of Business Education"
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/database/database.sqlite
+      - key: MAIL_MAILER
+        value: smtp
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: "587"
+      - key: MAIL_USERNAME
+        value: dvisckdavidjohnson@gmail.com
+      - key: MAIL_PASSWORD
+        value: bnwarpyktxbzfuiq
+      - key: MAIL_ENCRYPTION
+        value: tls
+      - key: MAIL_FROM_ADDRESS
+        value: dvisckdavidjohnson@gmail.com
+      - key: MAIL_FROM_NAME
+        value: "College of Business Education (CBE)"

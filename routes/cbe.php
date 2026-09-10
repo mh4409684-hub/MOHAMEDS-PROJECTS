@@ -13,6 +13,10 @@ Route::get('/cbe/login', [CBELoginController::class, 'showLoginForm'])->name('cb
 Route::post('/cbe/login', [CBELoginController::class, 'login'])->name('cbe.login.store');
 Route::post('/cbe/logout', [CBELoginController::class, 'logout'])->name('cbe.logout');
 
+// Student Self-Registration (Only Students can self-register)
+Route::get('/cbe/register', [CBELoginController::class, 'showRegisterForm'])->name('cbe.register');
+Route::post('/cbe/register', [CBELoginController::class, 'register'])->name('cbe.register.store');
+
 // 2FA Admin Verification Routes
 Route::get('/cbe/verify-2fa', [CBELoginController::class, 'show2faForm'])->name('cbe.verify-2fa');
 Route::post('/cbe/verify-2fa', [CBELoginController::class, 'verify2fa'])->name('cbe.verify-2fa.store');
@@ -56,6 +60,9 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     // Student Management
     Route::prefix('students')->name('students.')->group(function () {
         Route::get('/', [AdminDashboardController::class, 'students'])->name('index');
+        Route::get('/pending', [AdminDashboardController::class, 'pendingStudents'])->name('pending');
+        Route::post('/{student}/approve', [AdminDashboardController::class, 'approveStudent'])->name('approve');
+        Route::post('/{student}/reject', [AdminDashboardController::class, 'rejectStudent'])->name('reject');
         Route::get('/create', [AdminDashboardController::class, 'createStudentForm'])->name('create');
         Route::post('/', [AdminDashboardController::class, 'storeStudent'])->name('store');
         Route::get('/{student}', [AdminDashboardController::class, 'showStudent'])->name('show');

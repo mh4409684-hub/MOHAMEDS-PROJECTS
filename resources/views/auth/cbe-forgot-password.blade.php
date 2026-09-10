@@ -42,8 +42,24 @@
                     @csrf
 
                     <div>
+                        <label for="username" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Username / Student ID
+                        </label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            placeholder="e.g. mohamedy_admin or mohamedy"
+                            value="{{ old('username') }}"
+                            required
+                            autofocus
+                        >
+                    </div>
+
+                    <div>
                         <label for="email" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                            University Email Address
+                            University Registered Email Address
                         </label>
                         <input
                             type="email"
@@ -53,7 +69,6 @@
                             placeholder="e.g. mh4409684@gmail.com"
                             value="{{ old('email') }}"
                             required
-                            autofocus
                         >
                     </div>
 

@@ -19,18 +19,22 @@ class CheckSystemLock
             return $next($request);
         }
 
-        $control = SystemControl::instance();
+        try {
+            $control = SystemControl::instance();
 
-        // If system is locked, only MOHAMEDY (Super Admin) can access
-        if ($control->is_system_locked) {
-            $user = $request->user();
-            if (!$user || $user->email !== 'mh4409684@gmail.com') {
-                return response()->view('errors.system-locked', [
-                    'reason' => $control->lock_reason,
-                    'owner' => $control->owner_name,
-                    'email' => $control->owner_email,
-                ], 503);
+            // If system is locked, only MOHAMEDY (Super Admin) can access
+            if ($control && $control->is_system_locked) {
+                $user = $request->user();
+                if (!$user || $user->email !== 'mh4409684@gmail.com') {
+                    return response()->view('errors.system-locked', [
+                        'reason' => $control->lock_reason,
+                        'owner' => $control->owner_name,
+                        'email' => $control->owner_email,
+                    ], 503);
+                }
             }
+        } catch (\Throwable $e) {
+            // If table does not exist yet during first boot, continue gracefully
         }
 
         return $next($request);

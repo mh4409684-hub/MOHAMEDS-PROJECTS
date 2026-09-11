@@ -16,9 +16,15 @@ chmod -R 777 /var/www/html/database
 chmod -R 777 /var/www/html/storage
 chmod -R 777 /var/www/html/bootstrap/cache
 
-# Run migrations
+# Run migrations and seed
 echo "Running migrations..."
 php artisan migrate --force || true
+php artisan db:seed --force || true
+
+# Clear previous caches and recreate
+php artisan config:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
 
 # Start PHP-FPM
 echo "Starting PHP-FPM..."

@@ -6,6 +6,7 @@ RUN apk add --no-cache \
     curl \
     git \
     unzip \
+    dos2unix \
     libzip-dev \
     sqlite-dev \
     libpng-dev \
@@ -23,6 +24,10 @@ WORKDIR /var/www/html
 # Copy application files
 COPY . .
 
+# Convert Windows CRLF to Unix LF for shell scripts
+RUN dos2unix entrypoint.sh render-nginx.conf \
+    && chmod +x entrypoint.sh
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
@@ -38,8 +43,4 @@ COPY render-nginx.conf /etc/nginx/http.d/default.conf
 # Expose port (Render uses $PORT or default 8080)
 EXPOSE 8080
 
-# Start script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
-CMD ["/entrypoint.sh"]
+CMD ["/bin/sh", "/var/www/html/entrypoint.sh"]

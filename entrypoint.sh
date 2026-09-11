@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 PORT=${PORT:-8080}
 echo "Configuring Nginx to listen on port ${PORT}..."
@@ -8,17 +7,18 @@ sed -i "s/8080/${PORT}/g" /etc/nginx/http.d/default.conf
 # Generate APP_KEY if missing
 if [ -z "$APP_KEY" ]; then
     echo "Generating application key..."
-    php artisan key:generate --force
+    php artisan key:generate --force || true
 fi
 
-# Run migrations and seed data
+# Ensure SQLite database file exists with permissions
+touch /var/www/html/database/database.sqlite
+chmod -R 777 /var/www/html/database
+chmod -R 777 /var/www/html/storage
+chmod -R 777 /var/www/html/bootstrap/cache
+
+# Run migrations
 echo "Running migrations..."
 php artisan migrate --force || true
-
-# Cache configurations
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
 
 # Start PHP-FPM
 echo "Starting PHP-FPM..."

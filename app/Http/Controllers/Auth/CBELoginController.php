@@ -8,9 +8,11 @@ use App\Models\Student;
 use App\Models\Campus;
 use App\Models\Programme;
 use App\Models\AcademicYear;
+use App\Models\Section;
 use App\Mail\CollegeSecurityMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
@@ -43,31 +45,69 @@ class CBELoginController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        $user = User::create([
-            'name' => $validated['name'],
-            'username' => $validated['username'],
-            'registration_number' => $validated['registration_number'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'campus_id' => $validated['campus_id'],
-            'password' => $validated['password'],
-            'is_active' => false, // Pending Admin Approval
-        ]);
+        DB::transaction(function () use ($validated) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'username' => $validated['username'],
+                'registration_number' => $validated['registration_number'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'campus_id' => $validated['campus_id'],
+                'password' => $validated['password'],
+                'is_active' => false, // Pending Admin Approval
+            ]);
 
-        $user->assignRole('student');
+            $user->assignRole('student');
 
-        $currentYear = AcademicYear::where('is_current', true)->first() ?? AcademicYear::first();
+            $currentYear = AcademicYear::where('is_current', true)->first() ?? AcademicYear::first();
+            if (!$currentYear) {
+                $currentYear = AcademicYear::create([
+                    'year' => date('Y') . '/' . (date('Y') + 1),
+                    'start_date' => now()->startOfYear(),
+                    'end_date' => now()->addYear()->endOfYear(),
+                    'is_current' => true,
+                    'is_active' => true,
+                ]);
+            }
 
-        Student::create([
-            'user_id' => $user->id,
-            'campus_id' => $validated['campus_id'],
-            'programme_id' => $validated['programme_id'],
-            'year_of_study' => $validated['year_of_study'],
-            'academic_year_id' => $currentYear ? $currentYear->id : null,
-            'enrollment_status' => 'pending_approval',
-            'enrollment_date' => now(),
-            'notes' => 'Self-registered student awaiting administrator verification and approval.',
-        ]);
+            // Find or automatically create section for this programme, campus, and year
+            $section = Section::where('programme_id', $validated['programme_id'])
+                ->where('campus_id', $validated['campus_id'])
+                ->where('year_level', $validated['year_of_study'])
+                ->first();
+
+            if (!$section) {
+                $section = Section::where('programme_id', $validated['programme_id'])->first();
+            }
+
+            if (!$section) {
+                $programme = Programme::find($validated['programme_id']);
+                $progCode = $programme ? ($programme->code ?? 'SEC') : 'SEC';
+                $progName = $programme ? ($programme->name ?? 'Course') : 'Course';
+                $section = Section::create([
+                    'programme_id' => $validated['programme_id'],
+                    'campus_id' => $validated['campus_id'],
+                    'name' => "{$progName} - Yr {$validated['year_of_study']} (Sec A)",
+                    'code' => "{$progCode}-Y{$validated['year_of_study']}-A",
+                    'year_level' => $validated['year_of_study'],
+                    'section_letter' => 'A',
+                    'capacity' => 60,
+                    'is_active' => true,
+                ]);
+            }
+
+            Student::create([
+                'user_id' => $user->id,
+                'campus_id' => $validated['campus_id'],
+                'programme_id' => $validated['programme_id'],
+                'section_id' => $section->id,
+                'year_of_study' => $validated['year_of_study'],
+                'academic_year_id' => $currentYear ? $currentYear->id : null,
+                'enrollment_status' => 'pending_approval',
+                'enrollment_date' => now(),
+                'notes' => 'Self-registered student awaiting administrator verification and approval.',
+            ]);
+        });
 
         return redirect()->route('cbe.login')->with('success', 'Usajili wako umepokelewa kikamilifu! Akaunti yako sasa inasubiri uhakiki na idhini kutoka kwa Mkuu wa Mfumo (Admin). Mara tu itakapoidhinishwa, utatumiwa barua pepe na utaweza kuingia.');
     }

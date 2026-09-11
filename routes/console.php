@@ -65,28 +65,32 @@ Artisan::command('make:desktop-files', function () {
         mkdir($folder, 0755, true);
     }
 
-    $urlContent = "[InternetShortcut]\r\nURL=https://mohanedy-project.onrender.com/cbe/login\r\nIconIndex=0\r\n";
+    // Official Active 1-Click Desktop Shortcut that works immediately
+    $activeUrl = "https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/login";
+    $urlContent = "[InternetShortcut]\r\nURL={$activeUrl}\r\nIconIndex=0\r\n";
     file_put_contents("{$desktop}/CBE_Portal_App.url", $urlContent);
     file_put_contents("{$folder}/CBE_Portal_App.url", $urlContent);
 
     $info = <<<TEXT
 ================================================================================
 COLLEGE OF BUSINESS EDUCATION (CBE) - INTEGRATED E-LOGBOOK & ATTENDANCE SYSTEM
-Designed & Exclusively Owned by: MOHAMEDY HAMADI MOHAMED
+Designed & Exclusively Owned by: MOHAMEDY HAMADI MOHAMED (mohamedtechpro)
 ================================================================================
 
-1. PRIMARY 24/7 LIVE SERVER LINK (Render Cloud - Masaa 24 Hata Ukizima PC):
-   -----------------------------------------------------------------------
-   Login: https://mohanedy-project.onrender.com/cbe/login
-   Student Self-Register: https://mohanedy-project.onrender.com/cbe/register
+1. LINK INAYOFANYA KAZI TAYARI SASA HIVI (ACTIVE & TESTED 100%):
+   --------------------------------------------------------------
+   👉 Login Portal: https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/login
+   👉 Student Self-Register: https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/register
 
-2. BACKUP LIVE TUNNEL LINK (Laptop Hii Ikiwa Imewashwa):
-   -----------------------------------------------------
-   Login: https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/login
-   Student Register: https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/register
+   (Hii link ndiyo inayofungua mfumo wako moja kwa moja kwenye simu na kompyuta bila error yoyote!)
 
-3. LOCALHOST URL (Kwenye Kompyuta Hii Tu):
-   ----------------------------------------
+2. LINK YA RENDER CLOUD (Inayobaki Masaa 24):
+   ------------------------------------------
+   👉 Render Portal: https://mohamedy-project.onrender.com/cbe/login
+   * Kumbuka: Kwenye Render Free, ukiiacha kwa dakika 15 inalala (sleep). Mtu akibonyeza kwa mara ya kwanza inachukua sekunde 50 kuamka (spin-up) kabla ya kufunguka.
+
+3. LOCALHOST (Kwenye Kompyuta Hii Tu):
+   ------------------------------------
    URL: http://127.0.0.1:8080/cbe/login
 
 ================================================================================
@@ -100,9 +104,11 @@ A. SUPER ADMIN / SYSTEM OWNER:
    * Ujumbe wa 2FA unatumwa moja kwa moja kwenye Gmail ya mh4409684@gmail.com!
    * Ana ukurasa maalum wa "Owner Console" wa kuzima na kuwasha mfumo (/admin/owner-control).
 
-B. DEMO STUDENT (MWANAFUNZI WA MAJARIBIO):
-   - Email: student@cbe.ac.tz
-   - Password: Student@2025
+B. MWANAFUNZI MPYA (STUDENT):
+   - Wanafunzi hawana tena demo; wanajisajili wenyewe mtandaoni kupitia:
+     https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/register
+   - Kisha wewe Admin unawakubalia kwenye:
+     https://cave-trials-yorkshire-literary.trycloudflare.com/admin/students/pending
 
 C. FIELD SUPERVISOR:
    - Wasimamizi wote huundwa na kusajiliwa na Admin kutoka Admin Dashboard.
@@ -111,15 +117,12 @@ C. FIELD SUPERVISOR:
 JINSI YA KUTUMIA KAMA APP YA SIMU (ANDROID APK / PWA):
 ================================================================================
 Mtumie mtu au mwanafunzi link hii kwenye WhatsApp au SMS:
-👉 https://mohanedy-project.onrender.com/cbe/login
+👉 https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/login
 
 Akifungua kwenye Google Chrome ya simu yake:
 1. Atakuta kitufe cha bluu kilichoandikwa "Pakua App" / "Tumia Kama App Ya Simu".
 2. Au akibonyeza vitone 3 vya juu kulia vya Chrome (⋮), achague "Install App" / "Weka Kwenye Skrini".
-3. Hapo hapo simu yake itatengeneza Icon rasmi ya CBE Portal kwenye skrini ya simu yake na itafunguka kama App halisi ya simu bila browser bar na itatumia GPS ya simu yake!
-
-Kupakua APK Package (.apk file):
-Weka link hiyo kwenye tovuti ya bure ya Microsoft: https://www.pwabuilder.com kisha bonyeza "Package for Android" ili kupakua faili la .apk.
+3. Hapo hapo simu yake itatengeneza Icon rasmi ya CBE Portal kwenye skrini ya simu yake na itafunguka kama App halisi ya simu bila browser bar na inachukua GPS ya simu yake!
 ================================================================================
 TEXT;
 

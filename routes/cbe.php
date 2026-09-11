@@ -88,6 +88,10 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     // Reports
     Route::get('/reports', [AdminDashboardController::class, 'reports'])->name('reports');
     Route::get('/reports/attendance', [AdminDashboardController::class, 'attendanceReports'])->name('attendance-reports');
+
+    // Super Admin Ownership & Server Kill-Switch Control (Mohamedy Only)
+    Route::get('/owner-control', [AdminDashboardController::class, 'ownerControl'])->name('owner-control');
+    Route::post('/owner-control', [AdminDashboardController::class, 'updateOwnerControl'])->name('owner-control.update');
 });
 
 // Student Routes

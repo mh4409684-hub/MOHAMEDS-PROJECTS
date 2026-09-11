@@ -70,6 +70,11 @@
                         <a href="{{ route('admin.reports') }}" class="px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('admin.reports*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }} transition">
                             <i class="fa-solid fa-chart-pie mr-1.5"></i> Reports
                         </a>
+                        @if($user->email === 'mh4409684@gmail.com')
+                            <a href="{{ route('admin.owner-control') }}" class="px-3 py-2 rounded-lg text-sm font-bold {{ request()->routeIs('admin.owner-control*') ? 'bg-amber-500 text-slate-950' : 'text-amber-400 hover:bg-amber-400/10 hover:text-amber-300' }} border border-amber-500/30 transition">
+                                <i class="fa-solid fa-crown mr-1.5"></i> Owner Console
+                            </a>
+                        @endif
                     @elseif($user && $user->hasRole('student'))
                         <a href="{{ route('student.dashboard') }}" class="px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('student.dashboard') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white' }} transition">
                             <i class="fa-solid fa-gauge mr-1.5"></i> Overview
@@ -129,6 +134,20 @@
 
     <!-- Alert Messages -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full pt-4">
+        @php
+            $sysCtrl = \App\Models\SystemControl::instance();
+        @endphp
+        @if($sysCtrl->system_announcement)
+            <div class="mb-4 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50 to-blue-50 p-4 text-indigo-950 flex items-center shadow-sm">
+                <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center mr-3 shrink-0 shadow-sm">
+                    <i class="fa-solid fa-bullhorn text-xs"></i>
+                </div>
+                <div class="text-xs font-semibold">
+                    {{ $sysCtrl->system_announcement }}
+                </div>
+            </div>
+        @endif
+
         @if (session('success'))
             <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800 flex items-center shadow-sm">
                 <i class="fa-solid fa-circle-check text-emerald-500 text-lg mr-3"></i>
@@ -169,6 +188,9 @@
     <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
         <p class="font-semibold text-slate-700">College of Business Education (CBE) &mdash; University Portal</p>
         <p class="mt-1">Student E-Logbook & GPS-Verified Field Attendance System &bull; &copy; {{ date('Y') }}</p>
+        <p class="mt-1.5 text-[11px] text-slate-400">
+            System Designed & Developed with Proprietary Rights by <span class="font-bold text-blue-700">MOHAMEDY HAMADI MOHAMED</span> &bull; All Rights Reserved.
+        </p>
     </footer>
 
     @stack('scripts')

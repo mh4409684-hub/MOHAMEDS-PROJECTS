@@ -165,9 +165,11 @@
         </div>
 
         <!-- Footer -->
-        <div class="text-center mt-6 text-gray-600 text-sm">
-            <p>College of Business Education</p>
-            <p>Integrated E-Logbook & Attendance System</p>
+        <div class="text-center mt-6 text-gray-500 text-xs space-y-1">
+            <p class="font-bold text-gray-700">College of Business Education &bull; Integrated E-Logbook & Attendance</p>
+            <p class="text-[11px] text-gray-400">
+                Created & Exclusively Owned by <span class="font-bold text-blue-600">MOHAMEDY HAMADI MOHAMED</span> &bull; All Rights Reserved &copy; {{ date('Y') }}
+            </p>
         </div>
     </div>
 </body>

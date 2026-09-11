@@ -428,4 +428,61 @@ class AdminDashboardController extends Controller
 
         return view('admin.reports.attendance-filter', compact('courses', 'sections'));
     }
+
+    /**
+     * Super Admin Owner Control Panel (Ownership & Server Switch)
+     */
+    public function ownerControl()
+    {
+        $user = auth()->user();
+        if ($user->email !== 'mh4409684@gmail.com') {
+            abort(403, 'Unauthorized. This panel is strictly reserved for the System Owner & Super Administrator.');
+        }
+
+        $control = \App\Models\SystemControl::instance();
+        return view('admin.owner-control', compact('control'));
+    }
+
+    /**
+     * Update Owner System Controls (Kill Switch, Lock, Render API)
+     */
+    public function updateOwnerControl(Request $request)
+    {
+        $user = auth()->user();
+        if ($user->email !== 'mh4409684@gmail.com') {
+            abort(403, 'Unauthorized.');
+        }
+
+        $control = \App\Models\SystemControl::instance();
+
+        $action = $request->input('action');
+
+        if ($action === 'toggle_lock') {
+            $newStatus = !$control->is_system_locked;
+            $control->update([
+                'is_system_locked' => $newStatus,
+                'lock_reason' => $request->input('lock_reason') ?: $control->lock_reason,
+            ]);
+
+            $statusText = $newStatus ? 'LOCKED (Mfumo umezimwa kwa wote)' : 'UNLOCKED (Mfumo umewashwa na uko hewani)';
+            return back()->with('success', "Status ya mfumo imebadilishwa kuwa: {$statusText}");
+        }
+
+        if ($action === 'save_render') {
+            $control->update([
+                'render_service_id' => $request->input('render_service_id'),
+                'render_api_key' => $request->input('render_api_key'),
+            ]);
+            return back()->with('success', 'Mipangilio ya Render API imehifadhiwa salama.');
+        }
+
+        if ($action === 'save_announcement') {
+            $control->update([
+                'system_announcement' => $request->input('system_announcement'),
+            ]);
+            return back()->with('success', 'Tangazo la Mfumo limehifadhiwa na litaonekana kwa watumiaji wote.');
+        }
+
+        return back();
+    }
 }

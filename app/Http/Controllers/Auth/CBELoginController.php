@@ -150,36 +150,7 @@ class CBELoginController extends Controller
             ])->onlyInput('email');
         }
 
-        // Check if Admin requires 2FA OTP verification
-        if ($user->hasRole(['super_admin', 'admin'])) {
-            $otp = (string) random_int(100000, 999999);
-            $user->update([
-                'two_factor_otp' => $otp,
-                'two_factor_otp_expires_at' => now()->addMinutes(10),
-            ]);
-
-            try {
-                Mail::to($user->email)->send(new CollegeSecurityMail(
-                    $user,
-                    'CBE Portal - Admin Sign-in OTP Verification Code',
-                    $otp,
-                    '2fa'
-                ));
-            } catch (\Exception $e) {
-                // Log and continue gracefully
-                \Log::error('Could not send OTP mail: ' . $e->getMessage());
-            }
-
-            session([
-                'cbe_2fa_user_id' => $user->id,
-                'cbe_2fa_remember' => $request->boolean('remember'),
-            ]);
-
-            return redirect()->route('cbe.verify-2fa')
-                ->with('info', "A 6-digit verification code has been sent to {$user->email} for administrator security verification.");
-        }
-
-        // Direct login for student / supervisor
+        // Instant direct authentication for all roles
         Auth::login($user, $request->boolean('remember'));
         $request->session()->regenerate();
 

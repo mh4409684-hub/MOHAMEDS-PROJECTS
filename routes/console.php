@@ -66,7 +66,7 @@ Artisan::command('make:desktop-files', function () {
     }
 
     // Official Active 1-Click Desktop Shortcut that works immediately
-    $activeUrl = "https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/login";
+    $activeUrl = "https://delight-organization-night-amsterdam.trycloudflare.com/cbe/login";
     $urlContent = "[InternetShortcut]\r\nURL={$activeUrl}\r\nIconIndex=0\r\n";
     file_put_contents("{$desktop}/CBE_Portal_App.url", $urlContent);
     file_put_contents("{$folder}/CBE_Portal_App.url", $urlContent);
@@ -79,15 +79,16 @@ Designed & Exclusively Owned by: MOHAMEDY HAMADI MOHAMED (mohamedtechpro)
 
 1. LINK INAYOFANYA KAZI TAYARI SASA HIVI (ACTIVE & TESTED 100%):
    --------------------------------------------------------------
-   👉 Login Portal: https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/login
-   👉 Student Self-Register: https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/register
+   👉 Login Portal: https://delight-organization-night-amsterdam.trycloudflare.com/cbe/login
+   👉 Student Self-Register: https://delight-organization-night-amsterdam.trycloudflare.com/cbe/register
 
-   (Hii link ndiyo inayofungua mfumo wako moja kwa moja kwenye simu na kompyuta bila error yoyote!)
+   (Hii link ndiyo inayofungua mfumo wako moja kwa moja kwenye simu na kompyuta bila error yoyote PC ikiwa imewashwa!)
 
-2. LINK YA RENDER CLOUD (Inayobaki Masaa 24):
-   ------------------------------------------
+2. LINK YA RENDER CLOUD (Inayobaki Masaa 24 Hata Ukizima PC):
+   ----------------------------------------------------------
    👉 Render Portal: https://mohamedy-project.onrender.com/cbe/login
-   * Kumbuka: Kwenye Render Free, ukiiacha kwa dakika 15 inalala (sleep). Mtu akibonyeza kwa mara ya kwanza inachukua sekunde 50 kuamka (spin-up) kabla ya kufunguka.
+   👉 Student Self-Register: https://mohamedy-project.onrender.com/cbe/register
+   * Kumbuka: Kwenye Render Free, ukiiacha kwa dakika 15 inalala (sleep). Mtu akibonyeza kwa mara ya kwanza inachukua sekunde 30-50 kuamka (spin-up) kabla ya kufunguka.
 
 3. LOCALHOST (Kwenye Kompyuta Hii Tu):
    ------------------------------------

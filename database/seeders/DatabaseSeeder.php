@@ -215,19 +215,19 @@ class DatabaseSeeder extends Seeder
 
     private function seedSuperAdminUser(): void
     {
-        $superAdmin = User::firstOrCreate(
-            ['email' => 'superadmin@cbe.ac.tz'],
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'mh4409684@gmail.com'],
             [
-                'name' => 'Super Administrator',
-                'username' => 'superadmin',
-                'password' => bcrypt('SuperAdmin@2025'),
-                'registration_number' => 'ADM-001',
+                'name' => 'MOHAMEDY HAMADI MOHAMED',
+                'username' => 'mohamedy_admin',
+                'password' => bcrypt('mobili2004'),
+                'registration_number' => '03.5845.01.02.2025',
                 'phone' => '+255 700 000 001',
                 'is_active' => true,
             ]
         );
 
-        $superAdmin->syncRoles(['super_admin']);
+        $superAdmin->syncRoles(['super_admin', 'admin']);
     }
 
     private function seedUniversityUsersAndPlacements(): void

@@ -174,7 +174,16 @@ class AdminDashboardController extends Controller
             \Log::error('Could not send student approval email: ' . $e->getMessage());
         }
 
-        return back()->with('success', "Usajili wa mwanafunzi {$user->name} ({$user->registration_number}) umekubaliwa kikamilifu!");
+        $phone = preg_replace('/[^0-9]/', '', $user->phone ?? '');
+        if (str_starts_with($phone, '0')) {
+            $phone = '255' . substr($phone, 1);
+        }
+
+        return back()
+            ->with('success', "Usajili wa mwanafunzi {$user->name} ({$user->registration_number}) umekubaliwa kikamilifu!")
+            ->with('approved_student_name', $user->name)
+            ->with('approved_student_email', $user->email)
+            ->with('approved_student_phone', $phone);
     }
 
     /**

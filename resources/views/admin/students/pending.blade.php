@@ -19,11 +19,22 @@
         </div>
 
         @if(session('success'))
-            <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-circle-check text-emerald-600"></i>
-                    <span>{{ session('success') }}</span>
+            <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-circle-check text-emerald-600 text-xl shrink-0"></i>
+                    <div>
+                        <span class="font-bold text-emerald-950 block text-sm">{{ session('success') }}</span>
+                        <span class="text-emerald-700 text-xs">Mwanafunzi sasa anaweza kuingia kwenye mfumo mara moja kwa kutumia email na password yake.</span>
+                    </div>
                 </div>
+                @if(session('approved_student_phone'))
+                    @php
+                        $msg = urlencode("Habari " . session('approved_student_name') . ", akaunti yako ya mfumo wa CBE (E-Logbook) imeidhinishwa rasmi! Unaweza kuingia sasa hivi kupitia: https://mohamedy-project.onrender.com/cbe/login ukitumia email yako (" . session('approved_student_email') . ") na password uliyoweka.");
+                    @endphp
+                    <a href="https://wa.me/{{ session('approved_student_phone') }}?text={{ $msg }}" target="_blank" class="inline-flex items-center px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition shrink-0">
+                        <i class="fa-brands fa-whatsapp text-base mr-2"></i> Mfawamishe WhatsApp
+                    </a>
+                @endif
             </div>
         @endif
 
@@ -92,6 +103,19 @@
                                                 <i class="fa-solid fa-check mr-1"></i> Accept & Activate
                                             </button>
                                         </form>
+
+                                        @php
+                                            $stPhone = preg_replace('/[^0-9]/', '', $st->user->phone ?? '');
+                                            if (str_starts_with($stPhone, '0')) {
+                                                $stPhone = '255' . substr($stPhone, 1);
+                                            }
+                                            $rowMsg = urlencode("Habari " . $st->user->name . ", akaunti yako ya mfumo wa CBE (E-Logbook) imeidhinishwa rasmi! Unaweza kuingia sasa hivi kupitia: https://mohamedy-project.onrender.com/cbe/login ukitumia email yako (" . $st->user->email . ") na password uliyoweka.");
+                                        @endphp
+                                        @if($stPhone)
+                                            <a href="https://wa.me/{{ $stPhone }}?text={{ $rowMsg }}" target="_blank" class="inline-flex items-center px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 font-bold text-[11px] transition" title="Tuma ujumbe WhatsApp">
+                                                <i class="fa-brands fa-whatsapp text-emerald-600 mr-1 text-sm"></i> WhatsApp
+                                            </a>
+                                        @endif
 
                                         <!-- Reject Form -->
                                         <form action="{{ route('admin.students.reject', $st->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Je, una uhakika unataka kukataa ombi la mwanafunzi huyu? Akaunti yake itafutwa.')">

@@ -36,13 +36,30 @@
             <!-- Error Alerts -->
             @if ($errors->any())
                 <div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs">
-                    <p class="font-bold mb-1 flex items-center gap-1.5">
+                    <p class="font-bold mb-2 flex items-center gap-1.5 text-red-800 text-sm">
                         <i class="fa-solid fa-triangle-exclamation"></i>
-                        Please correct the following errors:
+                        Kuna hitilafu katika taarifa za usajili:
                     </p>
-                    <ul class="list-disc list-inside space-y-0.5 ml-2">
+                    <ul class="list-disc list-inside space-y-1.5 ml-2 text-xs">
                         @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
+                            @if(str_contains(strtolower($error), 'already been taken'))
+                                <li class="text-red-800 font-semibold list-none -ml-2 p-3 bg-red-100/70 border border-red-200 rounded-xl my-2">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fa-solid fa-circle-check text-emerald-600 text-base mt-0.5"></i>
+                                        <div>
+                                            <strong class="text-slate-900 block text-sm">Akaunti Hii Tayari Imeshasajiliwa Mfomoni!</strong>
+                                            <span class="text-slate-600 text-xs mt-0.5 block">Huna haja ya kujisajili upya. Unaweza kuingia moja kwa moja kwenye mfumo sasa hivi.</span>
+                                            <div class="mt-2.5">
+                                                <a href="{{ route('cbe.login') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+                                                    <i class="fa-solid fa-arrow-right-to-bracket mr-2"></i> Bofya Hapa Kuingia (Login Portal) &rarr;
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            @else
+                                <li>{{ $error }}</li>
+                            @endif
                         @endforeach
                     </ul>
                 </div>

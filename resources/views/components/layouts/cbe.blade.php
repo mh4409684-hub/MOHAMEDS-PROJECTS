@@ -185,10 +185,14 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
+    <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 space-y-2">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-semibold border border-slate-800 shadow-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+            <span>Created & Powered by <strong class="text-amber-400">mohamedtechpro</strong></span>
+        </div>
         <p class="font-semibold text-slate-700">College of Business Education (CBE) &mdash; University Portal</p>
-        <p class="mt-1">Student E-Logbook & GPS-Verified Field Attendance System &bull; &copy; {{ date('Y') }}</p>
-        <p class="mt-1.5 text-[11px] text-slate-400">
+        <p class="mt-0.5">Student E-Logbook & GPS-Verified Field Attendance System &bull; &copy; {{ date('Y') }}</p>
+        <p class="text-[11px] text-slate-400">
             System Designed & Developed with Proprietary Rights by <span class="font-bold text-blue-700">MOHAMEDY HAMADI MOHAMED</span> &bull; All Rights Reserved.
         </p>
     </footer>

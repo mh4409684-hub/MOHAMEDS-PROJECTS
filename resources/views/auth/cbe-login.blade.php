@@ -140,19 +140,18 @@
                     });
                 </script>
 
-                <!-- Demo Credentials -->
+                <!-- Admin Fast Login & Security -->
                 <div class="mt-8 pt-6 border-t border-gray-200">
-                    <p class="text-gray-600 text-xs font-bold uppercase tracking-wider mb-3">Quick Login (1-Click Fill):</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button type="button" onclick="fillLogin('mh4409684@gmail.com', 'mobili2004')" class="text-left p-2.5 rounded-lg border-2 border-blue-400 bg-blue-50/50 hover:bg-blue-100 transition">
-                            <span class="block text-xs font-black text-blue-900">👑 Mohamedy (Admin)</span>
-                            <span class="block text-[10px] text-blue-700">mh4409684@gmail.com</span>
-                        </button>
-                        <button type="button" onclick="fillLogin('student@cbe.ac.tz', 'Student@2025')" class="text-left p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-emerald-50 hover:border-emerald-300 transition">
-                            <span class="block text-xs font-bold text-slate-800">🎓 Student (Demo)</span>
-                            <span class="block text-[10px] text-slate-500">student@cbe.ac.tz</span>
-                        </button>
-                    </div>
+                    <p class="text-gray-500 text-[11px] font-bold uppercase tracking-wider mb-2.5">
+                        <i class="fa-solid fa-shield-halved text-blue-600 mr-1"></i> Authorized Portal Access:
+                    </p>
+                    <button type="button" onclick="fillLogin('mh4409684@gmail.com', 'mobili2004')" class="w-full text-left p-3 rounded-xl border-2 border-blue-400/80 bg-blue-50/60 hover:bg-blue-100 transition shadow-sm flex items-center justify-between">
+                        <div>
+                            <span class="block text-xs font-black text-blue-950">👑 MOHAMEDY HAMADI (Super Admin & Owner)</span>
+                            <span class="block text-[10px] text-blue-700">mh4409684@gmail.com &bull; Click to Auto-fill Credentials</span>
+                        </div>
+                        <span class="text-xs font-bold text-blue-600">Fill &rarr;</span>
+                    </button>
                 </div>
 
                 <script>
@@ -164,11 +163,15 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="text-center mt-6 text-gray-500 text-xs space-y-1">
+        <!-- Official Watermark & Ownership Badge -->
+        <div class="text-center mt-6 text-gray-500 text-xs space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 text-white text-[11px] font-semibold border border-slate-700 shadow-md">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span>Created & Powered by <strong class="text-amber-400 tracking-wider">mohamedtechpro</strong></span>
+            </div>
             <p class="font-bold text-gray-700">College of Business Education &bull; Integrated E-Logbook & Attendance</p>
             <p class="text-[11px] text-gray-400">
-                Created & Exclusively Owned by <span class="font-bold text-blue-600">MOHAMEDY HAMADI MOHAMED</span> &bull; All Rights Reserved &copy; {{ date('Y') }}
+                Proprietary Rights Reserved &copy; {{ date('Y') }} MOHAMEDY HAMADI MOHAMED
             </p>
         </div>
     </div>

@@ -54,11 +54,16 @@
                             id="email"
                             name="email"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('email') border-red-500 @enderror"
-                            placeholder="superadmin@cbe.ac.tz"
+                            placeholder="********@gmail.com"
                             value="{{ old('email') }}"
                             required
                             autofocus
                         >
+                        @error('email')
+                            <p class="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                                <i class="fa-solid fa-circle-info"></i> Mfano sahihi wa email: <strong>mh4409684@gmail.com</strong>
+                            </p>
+                        @enderror
                     </div>
 
                     <!-- Password Field -->
@@ -147,7 +152,7 @@
                     </p>
                     <button type="button" onclick="fillLogin('mh4409684@gmail.com', 'mobili2004')" class="w-full text-left p-3 rounded-xl border-2 border-blue-400/80 bg-blue-50/60 hover:bg-blue-100 transition shadow-sm flex items-center justify-between">
                         <div>
-                            <span class="block text-xs font-black text-blue-950">👑 MOHAMEDY HAMADI (Super Admin & Owner)</span>
+                            <span class="block text-xs font-black text-blue-950">👑 MOHAMEDY HAMADI (Portal Owner)</span>
                             <span class="block text-[10px] text-blue-700">mh4409684@gmail.com &bull; Click to Auto-fill Credentials</span>
                         </div>
                         <span class="text-xs font-bold text-blue-600">Fill &rarr;</span>

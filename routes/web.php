@@ -50,25 +50,3 @@ require __DIR__.'/tickets.php';
 
 require __DIR__.'/cbe.php';
 
-Route::get('/mail-diag-check', function () {
-    $results = [];
-    $ports = [
-        'smtp.gmail.com:587' => ['smtp.gmail.com', 587],
-        'smtp.gmail.com:465' => ['ssl://smtp.gmail.com', 465],
-        'www.google.com:443' => ['ssl://www.google.com', 443],
-    ];
-    foreach ($ports as $label => [$host, $port]) {
-        $errno = 0; $errstr = '';
-        $t0 = microtime(true);
-        $fp = @fsockopen($host, $port, $errno, $errstr, 4);
-        $dt = round(microtime(true) - $t0, 3);
-        if ($fp) {
-            $results[$label] = "OPEN ($dt s)";
-            fclose($fp);
-        } else {
-            $results[$label] = "BLOCKED ($errstr, $dt s)";
-        }
-    }
-    return response()->json($results);
-});
-

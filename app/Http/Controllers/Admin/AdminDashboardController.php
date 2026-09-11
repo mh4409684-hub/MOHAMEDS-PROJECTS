@@ -48,7 +48,13 @@ class AdminDashboardController extends Controller
             'total_campuses' => Campus::count(),
             'total_programmes' => Programme::count(),
             'total_courses' => Course::count(),
+            'pending_students' => Student::where('enrollment_status', 'pending_approval')->count(),
         ];
+
+        $pendingStudentRegistrations = Student::with('user', 'programme', 'campus')
+            ->where('enrollment_status', 'pending_approval')
+            ->latest()
+            ->get();
 
         $recentStudents = Student::with('user', 'programme')
             ->latest()
@@ -66,7 +72,7 @@ class AdminDashboardController extends Controller
             ->limit(10)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'recentStudents', 'recentStaff', 'pendingApprovals'));
+        return view('admin.dashboard', compact('stats', 'recentStudents', 'recentStaff', 'pendingApprovals', 'pendingStudentRegistrations'));
     }
 
     /**
@@ -144,24 +150,31 @@ class AdminDashboardController extends Controller
         // Send confirmation email to student
         try {
             $schemeAndHost = request()->getSchemeAndHttpHost();
-            if (str_contains($schemeAndHost, 'localhost') || str_contains($schemeAndHost, '127.0.0.1')) {
-                $loginUrl = 'https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/login';
+            if (str_contains($schemeAndHost, 'onrender.com')) {
+                $loginUrl = 'https://mohamedy-project.onrender.com/cbe/login';
+            } elseif (str_contains($schemeAndHost, 'localhost') || str_contains($schemeAndHost, '127.0.0.1')) {
+                $loginUrl = 'https://delight-organization-night-amsterdam.trycloudflare.com/cbe/login';
             } else {
                 $loginUrl = rtrim($schemeAndHost, '/') . '/cbe/login';
             }
 
-            Mail::to($user->email)->send(new CollegeSecurityMail(
-                $user,
-                'CBE Portal - Taarifa ya Kukubaliwa Usajili Wako wa Mfumo',
-                '',
-                'approval',
-                $loginUrl
-            ));
+            // If on Render free tier, skip outbound SMTP to avoid port 587 socket block hang
+            if (!str_contains($schemeAndHost, 'onrender.com')) {
+                Mail::to($user->email)->send(new CollegeSecurityMail(
+                    $user,
+                    'CBE Portal - Taarifa ya Kukubaliwa Usajili Wako wa Mfumo',
+                    '',
+                    'approval',
+                    $loginUrl
+                ));
+            } else {
+                \Log::info("Student {$user->name} activated on Render. Confirmation URL: {$loginUrl}");
+            }
         } catch (\Exception $e) {
             \Log::error('Could not send student approval email: ' . $e->getMessage());
         }
 
-        return back()->with('success', "Usajili wa mwanafunzi {$user->name} ({$user->registration_number}) umekubaliwa kikamilifu na barua pepe ya uthibitisho imetumwa kwenda {$user->email}!");
+        return back()->with('success', "Usajili wa mwanafunzi {$user->name} ({$user->registration_number}) umekubaliwa kikamilifu!");
     }
 
     /**

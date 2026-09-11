@@ -1,4 +1,4 @@
-﻿<x-layouts.cbe title="Admin Dashboard - CBE Portal">
+<x-layouts.cbe title="Admin Dashboard - CBE Portal">
     <!-- Welcome Header -->
     <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 p-6 rounded-2xl shadow-xl text-white">
         <div>
@@ -25,6 +25,30 @@
             </a>
         </div>
     </div>
+
+    @if(isset($pendingStudentRegistrations) && $pendingStudentRegistrations->isNotEmpty())
+        <div class="mb-8 p-5 bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-white border border-amber-200 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-start gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 text-xl shadow-md shadow-amber-500/30">
+                    <i class="fa-solid fa-user-clock"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        Wanafunzi {{ $pendingStudentRegistrations->count() }} Wanasubiri Kuidhinishwa (Pending Approval)
+                        <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold uppercase tracking-wide">Mpya</span>
+                    </h3>
+                    <p class="text-xs text-slate-600 mt-0.5">
+                        Wanafunzi wamejisajili kwenye tovuti na wanahitaji uthibitisho wako ili waweze kuingia kwenye akaunti zao.
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="{{ route('admin.students.pending') }}" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-xl shadow-md transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-check-double"></i> Kagua & Idhinisha Sasa
+                </a>
+            </div>
+        </div>
+    @endif
 
     <!-- Stat Cards Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">

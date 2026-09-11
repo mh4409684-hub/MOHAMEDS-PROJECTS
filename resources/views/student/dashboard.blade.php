@@ -1,4 +1,4 @@
-﻿<x-layouts.cbe title="Student Dashboard - CBE Portal">
+<x-layouts.cbe title="Student Dashboard - CBE Portal">
     <!-- Header Banner -->
     <div class="mb-8 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
@@ -147,7 +147,16 @@
                         <a href="{{ route('student.field-attendance') }}" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition">
                             Open GPS Check-in
                         </a>
+                </div>
+            @else
+                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 text-center py-10">
+                    <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl shadow-sm">
+                        <i class="fa-solid fa-hourglass-half"></i>
                     </div>
+                    <h3 class="text-base font-bold text-slate-800">Bado Hujapangiwa Eneo la Mafunzo (Field Placement)</h3>
+                    <p class="text-xs text-slate-500 mt-1.5 max-w-md mx-auto leading-relaxed">
+                        Mratibu wa Mafunzo ya Vitendo (Field Coordinator) au Utawala wa Chuo watakuunganisha na shirika lako la mafunzo pindi ratiba itakapowekwa.
+                    </p>
                 </div>
             @endif
 

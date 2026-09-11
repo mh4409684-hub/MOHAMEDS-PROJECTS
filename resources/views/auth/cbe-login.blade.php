@@ -35,9 +35,30 @@
 
             <!-- Form -->
             <div class="px-6 py-8">
+                @if (session('success'))
+                    <div class="mb-6 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3 shadow-sm">
+                        <i class="fa-solid fa-circle-check text-emerald-600 text-lg mt-0.5 shrink-0"></i>
+                        <div>
+                            <h4 class="text-sm font-bold text-emerald-900 mb-0.5">Taarifa ya Mafanikio</h4>
+                            <p class="text-emerald-800 text-xs leading-relaxed">{{ session('success') }}</p>
+                        </div>
+                    </div>
+                @endif
+
+                @if (session('info'))
+                    <div class="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3 shadow-sm">
+                        <i class="fa-solid fa-circle-info text-blue-600 text-lg mt-0.5 shrink-0"></i>
+                        <p class="text-blue-800 text-xs leading-relaxed">{{ session('info') }}</p>
+                    </div>
+                @endif
+
                 @if ($errors->any())
-                    <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-                        <p class="text-red-700 text-sm font-medium">{{ $errors->first() }}</p>
+                    <div class="mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 shadow-sm">
+                        <i class="fa-solid fa-circle-exclamation text-red-600 text-lg mt-0.5 shrink-0"></i>
+                        <div>
+                            <h4 class="text-sm font-bold text-red-900 mb-0.5">Hitilafu ya Kuingia:</h4>
+                            <p class="text-red-800 text-xs leading-relaxed">{{ $errors->first() }}</p>
+                        </div>
                     </div>
                 @endif
 
@@ -54,14 +75,14 @@
                             id="email"
                             name="email"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 @error('email') border-red-500 @enderror"
-                            placeholder="********@gmail.com"
+                            placeholder="Weka barua pepe yako (mfano: jina@gmail.com)"
                             value="{{ old('email') }}"
                             required
                             autofocus
                         >
                         @error('email')
                             <p class="text-xs text-red-600 mt-1.5 flex items-center gap-1">
-                                <i class="fa-solid fa-circle-info"></i> Mfano sahihi wa email: <strong>mh4409684@gmail.com</strong>
+                                <i class="fa-solid fa-circle-info"></i> Tafadhali thibitisha umeweka barua pepe sahihi uliyojisajili nayo.
                             </p>
                         @enderror
                     </div>

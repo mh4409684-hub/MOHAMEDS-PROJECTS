@@ -37,6 +37,18 @@ class StudentDashboardController extends Controller
         $user = auth()->user();
         $student = $user->student;
 
+        if (!$student) {
+            $student = \App\Models\Student::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'campus_id' => $user->campus_id ?? 1,
+                    'programme_id' => 1,
+                    'year_of_study' => 1,
+                    'enrollment_status' => 'enrolled',
+                ]
+            );
+        }
+
         $fieldPlacement = $student->fieldPlacements()
             ->where('status', 'active')
             ->first();

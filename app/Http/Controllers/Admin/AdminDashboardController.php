@@ -143,12 +143,19 @@ class AdminDashboardController extends Controller
 
         // Send confirmation email to student
         try {
+            $schemeAndHost = request()->getSchemeAndHttpHost();
+            if (str_contains($schemeAndHost, 'localhost') || str_contains($schemeAndHost, '127.0.0.1')) {
+                $loginUrl = 'https://cave-trials-yorkshire-literary.trycloudflare.com/cbe/login';
+            } else {
+                $loginUrl = rtrim($schemeAndHost, '/') . '/cbe/login';
+            }
+
             Mail::to($user->email)->send(new CollegeSecurityMail(
                 $user,
                 'CBE Portal - Taarifa ya Kukubaliwa Usajili Wako wa Mfumo',
                 '',
                 'approval',
-                route('cbe.login')
+                $loginUrl
             ));
         } catch (\Exception $e) {
             \Log::error('Could not send student approval email: ' . $e->getMessage());

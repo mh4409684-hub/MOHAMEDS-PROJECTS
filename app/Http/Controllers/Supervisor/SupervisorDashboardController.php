@@ -25,12 +25,34 @@ class SupervisorDashboardController extends Controller
     }
 
     /**
+     * Get supervisor staff profile with null-safe fallback
+     */
+    protected function getSupervisorStaff()
+    {
+        $user = auth()->user();
+        $staff = $user->staff;
+        if (!$staff) {
+            $staff = \App\Models\Staff::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'campus_id' => $user->campus_id ?? 1,
+                    'staff_type' => 'supervisor',
+                    'designation' => 'Field Supervisor',
+                    'employment_date' => now(),
+                    'employment_status' => 'active',
+                ]
+            );
+        }
+        return $staff;
+    }
+
+    /**
      * Show supervisor dashboard
      */
     public function index()
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         $assignedPlacements = $supervisor->fieldSupervisorAssignments()
             ->where('status', 'active')
@@ -73,7 +95,7 @@ class SupervisorDashboardController extends Controller
     public function assignedStudents()
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         $assignments = $supervisor->fieldSupervisorAssignments()
             ->where('status', 'active')
@@ -90,7 +112,7 @@ class SupervisorDashboardController extends Controller
     public function showStudent(FieldPlacement $placement)
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         // Verify supervisor is assigned to this placement
         $assignment = $placement->supervisorAssignments()
@@ -116,7 +138,7 @@ class SupervisorDashboardController extends Controller
     public function pendingLogbooks()
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         $logbooks = LogbookEntry::whereHas('fieldPlacement.supervisorAssignments', function ($q) use ($supervisor) {
             $q->where('supervisor_staff_id', $supervisor->id)
@@ -136,7 +158,7 @@ class SupervisorDashboardController extends Controller
     public function reviewLogbook(LogbookEntry $entry)
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         // Verify supervisor is assigned
         $assignment = $entry->fieldPlacement->supervisorAssignments()
@@ -159,7 +181,7 @@ class SupervisorDashboardController extends Controller
     public function approveLogbook(Request $request, LogbookEntry $entry)
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         // Verify supervisor is assigned
         $assignment = $entry->fieldPlacement->supervisorAssignments()
@@ -183,7 +205,7 @@ class SupervisorDashboardController extends Controller
                 'DIGITAL_SIGNATURE_' . now()->timestamp // Placeholder signature
             );
 
-            return redirect()->route('supervisor.pending-logbooks')
+            return redirect()->route('supervisor.logbooks.pending')
                 ->with('success', 'Logbook approved successfully');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -196,7 +218,7 @@ class SupervisorDashboardController extends Controller
     public function rejectLogbook(Request $request, LogbookEntry $entry)
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         // Verify supervisor is assigned
         $assignment = $entry->fieldPlacement->supervisorAssignments()
@@ -219,7 +241,7 @@ class SupervisorDashboardController extends Controller
                 $validated['rejection_reason']
             );
 
-            return redirect()->route('supervisor.pending-logbooks')
+            return redirect()->route('supervisor.logbooks.pending')
                 ->with('success', 'Logbook rejected');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -232,7 +254,7 @@ class SupervisorDashboardController extends Controller
     public function pendingReports()
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         $reports = WeeklyReport::whereHas('fieldPlacement.supervisorAssignments', function ($q) use ($supervisor) {
             $q->where('supervisor_staff_id', $supervisor->id)
@@ -252,7 +274,7 @@ class SupervisorDashboardController extends Controller
     public function reviewReport(WeeklyReport $report)
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         // Verify supervisor is assigned
         $assignment = $report->fieldPlacement->supervisorAssignments()
@@ -275,7 +297,7 @@ class SupervisorDashboardController extends Controller
     public function approveReport(Request $request, WeeklyReport $report)
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         // Verify supervisor is assigned
         $assignment = $report->fieldPlacement->supervisorAssignments()
@@ -293,7 +315,7 @@ class SupervisorDashboardController extends Controller
 
         try {
             $this->logbookService->approveWeeklyReport($report, $supervisor->id, $validated['comments'] ?? null);
-            return redirect()->route('supervisor.pending-reports')
+            return redirect()->route('supervisor.reports.pending')
                 ->with('success', 'Weekly report approved');
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
@@ -306,7 +328,7 @@ class SupervisorDashboardController extends Controller
     public function logbookHistory(FieldPlacement $placement)
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         // Verify supervisor is assigned
         $assignment = $placement->supervisorAssignments()
@@ -328,7 +350,7 @@ class SupervisorDashboardController extends Controller
     public function fieldAttendance(FieldPlacement $placement)
     {
         $user = auth()->user();
-        $supervisor = $user->staff;
+        $supervisor = $this->getSupervisorStaff();
 
         // Verify supervisor is assigned
         $assignment = $placement->supervisorAssignments()

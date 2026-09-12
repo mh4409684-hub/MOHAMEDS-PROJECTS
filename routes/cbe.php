@@ -44,10 +44,10 @@ Route::middleware(['auth'])->group(function () {
     // Reports
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::post('/student-profile', [ReportController::class, 'studentProfile'])->name('student-profile');
-        Route::post('/attendance', [ReportController::class, 'attendance'])->name('attendance');
-        Route::post('/field-placement', [ReportController::class, 'fieldPlacement'])->name('field-placement');
-        Route::post('/system-statistics', [ReportController::class, 'systemStatistics'])->name('system-statistics');
+        Route::match(['get', 'post'], '/student-profile', [ReportController::class, 'studentProfile'])->name('student-profile');
+        Route::match(['get', 'post'], '/attendance', [ReportController::class, 'attendance'])->name('attendance');
+        Route::match(['get', 'post'], '/field-placement', [ReportController::class, 'fieldPlacement'])->name('field-placement');
+        Route::match(['get', 'post'], '/system-statistics', [ReportController::class, 'systemStatistics'])->name('system-statistics');
     });
 });
 
@@ -83,6 +83,8 @@ Route::middleware(['auth', 'role:admin|super_admin'])->prefix('admin')->name('ad
     
     // Field Placements & Supervisor Assignment
     Route::get('/field-placements', [AdminDashboardController::class, 'fieldPlacements'])->name('field-placements');
+    Route::get('/field-placements/create', [AdminDashboardController::class, 'createPlacementForm'])->name('field-placements.create');
+    Route::post('/field-placements', [AdminDashboardController::class, 'storePlacement'])->name('field-placements.store');
     Route::post('/field-placements/{placement}/assign-supervisor', [AdminDashboardController::class, 'assignSupervisorToPlacement'])->name('field-placements.assign-supervisor');
     
     // Reports
@@ -109,10 +111,10 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
         Route::get('/', [StudentDashboardController::class, 'eLogbook'])->name('index');
         Route::get('/create', [StudentDashboardController::class, 'createLogbookEntry'])->name('create');
         Route::post('/', [StudentDashboardController::class, 'storeLogbookEntry'])->name('store');
-        Route::get('/{logbookEntry}', [StudentDashboardController::class, 'showLogbookEntry'])->name('show');
-        Route::get('/{logbookEntry}/edit', [StudentDashboardController::class, 'editLogbookEntry'])->name('edit');
-        Route::put('/{logbookEntry}', [StudentDashboardController::class, 'updateLogbookEntry'])->name('update');
-        Route::post('/{logbookEntry}/submit', [StudentDashboardController::class, 'submitLogbookEntry'])->name('submit');
+        Route::get('/{entry}', [StudentDashboardController::class, 'showLogbookEntry'])->name('show');
+        Route::get('/{entry}/edit', [StudentDashboardController::class, 'editLogbookEntry'])->name('edit');
+        Route::put('/{entry}', [StudentDashboardController::class, 'updateLogbookEntry'])->name('update');
+        Route::post('/{entry}/submit', [StudentDashboardController::class, 'submitLogbookEntry'])->name('submit');
     });
 
     // Weekly Reports
@@ -140,24 +142,24 @@ Route::middleware(['auth', 'role:field_supervisor'])->prefix('supervisor')->name
     // Assigned Students
     Route::prefix('students')->name('students.')->group(function () {
         Route::get('/', [SupervisorDashboardController::class, 'assignedStudents'])->name('index');
-        Route::get('/{fieldPlacement}', [SupervisorDashboardController::class, 'showStudent'])->name('show');
-        Route::get('/{fieldPlacement}/attendance', [SupervisorDashboardController::class, 'fieldAttendance'])->name('attendance');
+        Route::get('/{placement}', [SupervisorDashboardController::class, 'showStudent'])->name('show');
+        Route::get('/{placement}/attendance', [SupervisorDashboardController::class, 'fieldAttendance'])->name('attendance');
     });
 
     // Logbook Review
     Route::prefix('logbooks')->name('logbooks.')->group(function () {
         Route::get('/pending', [SupervisorDashboardController::class, 'pendingLogbooks'])->name('pending');
-        Route::get('/{logbookEntry}', [SupervisorDashboardController::class, 'reviewLogbook'])->name('review');
-        Route::post('/{logbookEntry}/approve', [SupervisorDashboardController::class, 'approveLogbook'])->name('approve');
-        Route::post('/{logbookEntry}/reject', [SupervisorDashboardController::class, 'rejectLogbook'])->name('reject');
-        Route::get('/{fieldPlacement}/history', [SupervisorDashboardController::class, 'logbookHistory'])->name('history');
+        Route::get('/{entry}', [SupervisorDashboardController::class, 'reviewLogbook'])->name('review');
+        Route::post('/{entry}/approve', [SupervisorDashboardController::class, 'approveLogbook'])->name('approve');
+        Route::post('/{entry}/reject', [SupervisorDashboardController::class, 'rejectLogbook'])->name('reject');
+        Route::get('/{placement}/history', [SupervisorDashboardController::class, 'logbookHistory'])->name('history');
     });
 
     // Weekly Reports
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/pending', [SupervisorDashboardController::class, 'pendingReports'])->name('pending');
-        Route::get('/{weeklyReport}', [SupervisorDashboardController::class, 'reviewReport'])->name('review');
-        Route::post('/{weeklyReport}/approve', [SupervisorDashboardController::class, 'approveReport'])->name('approve');
+        Route::get('/{report}', [SupervisorDashboardController::class, 'reviewReport'])->name('review');
+        Route::post('/{report}/approve', [SupervisorDashboardController::class, 'approveReport'])->name('approve');
     });
 
     // Notifications

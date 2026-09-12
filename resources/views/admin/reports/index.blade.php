@@ -1,4 +1,4 @@
-﻿<x-layouts.cbe title="System Reports - CBE Portal">
+<x-layouts.cbe title="System Reports - CBE Portal">
     <div class="space-y-6">
         <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
             <h1 class="text-2xl font-black text-slate-900">Reports & Compliance</h1>
@@ -14,9 +14,9 @@
                     <h3 class="font-bold text-sm text-slate-900">GPS Field Attendance Audit</h3>
                     <p class="text-xs text-slate-500 mt-1">Detailed coordinate logs and distance compliance per student placement.</p>
                 </div>
-                <button type="button" class="w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
+                <a href="{{ route('reports.index') }}" class="block text-center w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
                     Generate Log Report
-                </button>
+                </a>
             </div>
 
             <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
@@ -27,9 +27,9 @@
                     <h3 class="font-bold text-sm text-slate-900">E-Logbook Completion</h3>
                     <p class="text-xs text-slate-500 mt-1">Status of weekly reports and daily submissions reviewed by supervisors.</p>
                 </div>
-                <button type="button" class="w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
+                <a href="{{ route('reports.index') }}" class="block text-center w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
                     Generate Logbook Report
-                </button>
+                </a>
             </div>
 
             <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
@@ -40,9 +40,9 @@
                     <h3 class="font-bold text-sm text-slate-900">Class Lecture Attendance</h3>
                     <p class="text-xs text-slate-500 mt-1">Dynamic code lecture session attendance rates by course and section.</p>
                 </div>
-                <button type="button" class="w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
+                <a href="{{ route('admin.attendance-reports') }}" class="block text-center w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
                     Generate Class Report
-                </button>
+                </a>
             </div>
         </div>
     </div>

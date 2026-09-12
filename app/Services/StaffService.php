@@ -141,13 +141,15 @@ class StaffService
     {
         $roles = [
             'lecturer' => 'lecturer',
+            'supervisor' => 'field_supervisor',
             'field_supervisor' => 'field_supervisor',
+            'coordinator' => 'field_coordinator',
             'field_coordinator' => 'field_coordinator',
             'admin' => 'admin',
         ];
 
-        $role = $roles[$staffType] ?? 'lecturer';
-        $user->assignRole($role);
+        $role = $roles[$staffType] ?? 'field_supervisor';
+        $user->syncRoles([$role]);
     }
 
     /**

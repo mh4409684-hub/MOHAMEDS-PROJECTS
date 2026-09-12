@@ -15,6 +15,7 @@ use App\Models\Programme;
 use App\Models\Course;
 use App\Models\Section;
 use App\Models\AcademicYear;
+use App\Models\HostOrganization;
 use App\Services\StudentService;
 use App\Services\StaffService;
 use App\Mail\CollegeSecurityMail;
@@ -423,6 +424,61 @@ class AdminDashboardController extends Controller
         ]);
 
         return back()->with('success', 'Field supervisor assigned successfully! The student now appears immediately in the supervisor\'s account.');
+    }
+
+    /**
+     * Show form to create new field placement
+     */
+    public function createPlacementForm()
+    {
+        $students = Student::with('user', 'programme', 'campus')->get();
+        $organizations = HostOrganization::all();
+        $academicYears = AcademicYear::all();
+        $supervisors = Staff::with('user')->whereIn('staff_type', ['supervisor', 'lecturer', 'admin'])->get();
+
+        return view('admin.field-placements.create', compact('students', 'organizations', 'academicYears', 'supervisors'));
+    }
+
+    /**
+     * Store newly created field placement
+     */
+    public function storePlacement(Request $request)
+    {
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'host_organization_id' => 'required|exists:host_organizations,id',
+            'academic_year_id' => 'nullable|exists:academic_years,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'total_days' => 'required|integer|min:1',
+            'supervisor_staff_id' => 'nullable|exists:staff,id',
+        ]);
+
+        $academicYearId = $validated['academic_year_id'] ?? (AcademicYear::where('is_current', true)->first()?->id ?? AcademicYear::first()?->id);
+
+        $placement = FieldPlacement::create([
+            'student_id' => $validated['student_id'],
+            'host_organization_id' => $validated['host_organization_id'],
+            'academic_year_id' => $academicYearId,
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+            'total_days' => $validated['total_days'],
+            'days_completed' => 0,
+            'field_progress' => 0,
+            'status' => 'active',
+        ]);
+
+        if (!empty($validated['supervisor_staff_id'])) {
+            \App\Models\FieldSupervisorAssignment::create([
+                'field_placement_id' => $placement->id,
+                'supervisor_staff_id' => $validated['supervisor_staff_id'],
+                'assigned_date' => now(),
+                'status' => 'active',
+            ]);
+        }
+
+        return redirect()->route('admin.field-placements')
+            ->with('success', 'Eneo la mafunzo (Field Placement) limetengenezwa na msimamizi amekabidhiwa kikamilifu!');
     }
 
     /**

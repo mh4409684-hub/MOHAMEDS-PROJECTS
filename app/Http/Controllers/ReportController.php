@@ -16,7 +16,6 @@ class ReportController extends Controller
     public function __construct(ReportService $reportService)
     {
         $this->reportService = $reportService;
-        $this->middleware(['auth']);
     }
 
     /**
@@ -109,7 +108,9 @@ class ReportController extends Controller
             'format' => 'required|in:view,pdf,excel',
         ]);
 
-        $this->authorize('viewAny', \App\Models\AuditLog::class);
+        if (!auth()->user()->hasRole(['admin', 'super_admin'])) {
+            abort(403, 'Unauthorized access to system statistics');
+        }
 
         $reportData = $this->reportService->generateSystemStatistics();
 

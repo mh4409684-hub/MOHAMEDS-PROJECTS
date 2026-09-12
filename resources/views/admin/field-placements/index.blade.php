@@ -5,7 +5,21 @@
                 <h1 class="text-2xl font-black text-slate-900">Field Placements & Supervisor Allocations</h1>
                 <p class="text-xs text-slate-500 mt-1">Manage industrial training placements, GPS geofences, and assign university field supervisors.</p>
             </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('admin.field-placements.create') }}" class="inline-flex items-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+                    <i class="fa-solid fa-plus-circle mr-2"></i> Panga Mwanafunzi Kwenye Field
+                </a>
+            </div>
         </div>
+
+        @if(session('success'))
+            <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-2.5">
+                    <i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i>
+                    <span class="font-bold">{{ session('success') }}</span>
+                </div>
+            </div>
+        @endif
 
         <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6">
             @if($placements->isEmpty())

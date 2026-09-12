@@ -38,6 +38,14 @@ class StaffService
 
         $this->assignRoleByStaffType($user, $data['staff_type']);
 
+        try {
+            \Illuminate\Support\Facades\Mail::to($user->email)->send(
+                new \App\Mail\StaffWelcomeMail($user, $data['password'], $data['staff_type'])
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Could not send staff welcome email: ' . $e->getMessage());
+        }
+
         return $staff->load('user', 'campus', 'department');
     }
 

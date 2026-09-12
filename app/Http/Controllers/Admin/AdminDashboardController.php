@@ -570,4 +570,43 @@ class AdminDashboardController extends Controller
 
         return back();
     }
+
+    /**
+     * Test email sending directly from server
+     */
+    public function testEmail(Request $request)
+    {
+        $user = auth()->user();
+        if ($user->email !== 'mh4409684@gmail.com') {
+            abort(403);
+        }
+
+        $targetEmail = $request->input('to', $user->email);
+
+        try {
+            \Illuminate\Support\Facades\Mail::raw("CBE Portal Live Email Test\nSent at: " . now()->toDateTimeString(), function ($message) use ($targetEmail) {
+                $message->to($targetEmail)
+                        ->subject("CBE Portal Test Email - " . now()->format('H:i:s'));
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Email sent successfully to {$targetEmail}!",
+                'config' => [
+                    'mailer' => config('mail.default'),
+                    'host' => config('mail.mailers.smtp.host'),
+                    'port' => config('mail.mailers.smtp.port'),
+                    'encryption' => config('mail.mailers.smtp.encryption'),
+                    'from' => config('mail.from.address'),
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'error_message' => $e->getMessage(),
+                'class' => get_class($e),
+                'file' => $e->getFile() . ':' . $e->getLine(),
+            ], 500);
+        }
+    }
 }

@@ -426,20 +426,29 @@ class AdminDashboardController extends Controller
             'supervisor_staff_id' => 'required|exists:staff,id',
         ]);
 
-        // Deactivate previous
-        $placement->supervisorAssignments()->where('status', 'active')->update([
-            'status' => 'reassigned',
-            'unassigned_date' => now(),
-        ]);
+        // Deactivate any other active supervisor assignments for this placement
+        $placement->supervisorAssignments()
+            ->where('supervisor_staff_id', '!=', $request->input('supervisor_staff_id'))
+            ->where('status', 'active')
+            ->update([
+                'status' => 'reassigned',
+                'unassigned_date' => now(),
+            ]);
 
-        \App\Models\FieldSupervisorAssignment::create([
-            'field_placement_id' => $placement->id,
-            'supervisor_staff_id' => $request->input('supervisor_staff_id'),
-            'assigned_date' => now(),
-            'status' => 'active',
-        ]);
+        // Safely update existing or create new assignment for this supervisor and placement
+        \App\Models\FieldSupervisorAssignment::updateOrCreate(
+            [
+                'field_placement_id' => $placement->id,
+                'supervisor_staff_id' => $request->input('supervisor_staff_id'),
+            ],
+            [
+                'assigned_date' => now(),
+                'unassigned_date' => null,
+                'status' => 'active',
+            ]
+        );
 
-        return back()->with('success', 'Field supervisor assigned successfully! The student now appears immediately in the supervisor\'s account.');
+        return back()->with('success', 'Msimamizi wa mafunzo amekabidhiwa kikamilifu! Mwanafunzi sasa anaonekana mara moja kwenye akaunti ya msimamizi.');
     }
 
     /**
@@ -485,12 +494,17 @@ class AdminDashboardController extends Controller
         ]);
 
         if (!empty($validated['supervisor_staff_id'])) {
-            \App\Models\FieldSupervisorAssignment::create([
-                'field_placement_id' => $placement->id,
-                'supervisor_staff_id' => $validated['supervisor_staff_id'],
-                'assigned_date' => now(),
-                'status' => 'active',
-            ]);
+            \App\Models\FieldSupervisorAssignment::updateOrCreate(
+                [
+                    'field_placement_id' => $placement->id,
+                    'supervisor_staff_id' => $validated['supervisor_staff_id'],
+                ],
+                [
+                    'assigned_date' => now(),
+                    'unassigned_date' => null,
+                    'status' => 'active',
+                ]
+            );
         }
 
         return redirect()->route('admin.field-placements')

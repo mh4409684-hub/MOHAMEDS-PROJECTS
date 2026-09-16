@@ -54,16 +54,22 @@ class FieldManagementService
     {
         // Deactivate existing assignment if any
         $placement->supervisorAssignments()
+            ->where('supervisor_staff_id', '!=', $supervisorId)
             ->where('status', 'active')
             ->update(['status' => 'completed', 'unassigned_date' => now()]);
 
-        // Create new assignment
-        $assignment = FieldSupervisorAssignment::create([
-            'field_placement_id' => $placement->id,
-            'supervisor_staff_id' => $supervisorId,
-            'assigned_date' => now(),
-            'status' => 'active',
-        ]);
+        // Create or reactivate assignment
+        $assignment = FieldSupervisorAssignment::updateOrCreate(
+            [
+                'field_placement_id' => $placement->id,
+                'supervisor_staff_id' => $supervisorId,
+            ],
+            [
+                'assigned_date' => now(),
+                'unassigned_date' => null,
+                'status' => 'active',
+            ]
+        );
 
         // Notify supervisor
         $supervisor = $assignment->supervisor;

@@ -10,9 +10,11 @@ if [ -z "$APP_KEY" ]; then
     php artisan key:generate --force || true
 fi
 
-# Ensure SQLite database file exists with permissions
-touch /var/www/html/database/database.sqlite
-chmod -R 777 /var/www/html/database
+# Ensure database permissions
+if [ "$DB_CONNECTION" = "sqlite" ] || [ -z "$DB_CONNECTION" ] && [ -z "$DATABASE_URL" ]; then
+    touch /var/www/html/database/database.sqlite
+    chmod -R 777 /var/www/html/database
+fi
 chmod -R 777 /var/www/html/storage
 chmod -R 777 /var/www/html/bootstrap/cache
 

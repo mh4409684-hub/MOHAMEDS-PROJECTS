@@ -9,11 +9,12 @@ RUN apk add --no-cache \
     dos2unix \
     libzip-dev \
     sqlite-dev \
+    postgresql-dev \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo pdo_sqlite zip gd opcache
+    && docker-php-ext-install pdo pdo_sqlite pdo_pgsql zip gd opcache
 
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

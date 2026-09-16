@@ -147,15 +147,33 @@
                         <a href="{{ route('student.field-attendance') }}" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition">
                             Open GPS Check-in
                         </a>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                        <span class="text-slate-500">Unahitaji kurekebisha taarifa za eneo au msimamizi wako?</span>
+                        <a href="{{ route('student.field-placement.apply') }}" class="font-bold text-blue-600 hover:text-blue-800 hover:underline inline-flex items-center gap-1">
+                            <i class="fa-solid fa-pen-to-square"></i> Badili Taarifa za Field
+                        </a>
+                    </div>
                 </div>
             @else
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 text-center py-10">
-                    <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl shadow-sm">
-                        <i class="fa-solid fa-hourglass-half"></i>
+                <div class="bg-white rounded-3xl border border-blue-200/80 shadow-sm p-6 sm:p-8 text-center space-y-4">
+                    <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto text-2xl shadow-inner">
+                        <i class="fa-solid fa-building-circle-check"></i>
                     </div>
-                    <h3 class="text-base font-bold text-slate-800">Bado Hujapangiwa Eneo la Mafunzo (Field Placement)</h3>
-                    <p class="text-xs text-slate-500 mt-1.5 max-w-md mx-auto leading-relaxed">
-                        Mratibu wa Mafunzo ya Vitendo (Field Coordinator) au Utawala wa Chuo watakuunganisha na shirika lako la mafunzo pindi ratiba itakapowekwa.
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900">Umeshapata Eneo la Field?</h3>
+                        <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto leading-relaxed">
+                            Kama umeshapata kampuni, shirika, benki, au ofisi ya kufanyia mafunzo ya vitendo, bonyeza kitufe hapa chini ujaze taarifa za taasisi na namba ya simu ya msimamizi wako kazini.
+                        </p>
+                    </div>
+                    <div class="pt-2">
+                        <a href="{{ route('student.field-placement.apply') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-xs shadow-lg shadow-blue-500/25 transition transform hover:-translate-y-0.5">
+                            <i class="fa-solid fa-plus-circle text-sm"></i> Jaza Eneo la Field Ulilopata Sasa Hivi &rarr;
+                        </a>
+                    </div>
+                    <p class="text-[11px] text-slate-400 italic">
+                        (Kumbuka: Admin pia anaweza kukupangia au kukusaidia kukamilisha eneo la mafunzo wakati wowote).
                     </p>
                 </div>
             @endif

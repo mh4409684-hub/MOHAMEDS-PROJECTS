@@ -140,40 +140,108 @@ class DatabaseSeeder extends Seeder
         $campus = Campus::where('code', 'DES')->first();
 
         if ($campus) {
-            $itDept = Department::firstOrCreate(
-                ['code' => 'IT', 'campus_id' => $campus->id],
-                ['name' => 'Information Technology', 'is_active' => true]
-            );
+            // 1. All CBE Departments
+            $departments = [
+                'IT' => 'Information and Communication Technology (ICT)',
+                'ACC' => 'Accountancy & Auditing',
+                'BA' => 'Business Administration & Management',
+                'MKT' => 'Marketing',
+                'PS' => 'Procurement and Supplies Management',
+                'BF' => 'Banking and Financial Services',
+                'MET' => 'Metrology & Standardization',
+            ];
 
-            $prog = Programme::firstOrCreate(
-                ['code' => 'BIT', 'department_id' => $itDept->id],
-                [
-                    'name' => 'Bachelor of Information Technology',
-                    'level' => 'Bachelor',
-                    'duration_years' => 3,
-                    'is_active' => true,
-                ]
-            );
+            $deptModels = [];
+            foreach ($departments as $code => $name) {
+                $deptModels[$code] = Department::firstOrCreate(
+                    ['code' => $code, 'campus_id' => $campus->id],
+                    ['name' => $name, 'is_active' => true]
+                );
+            }
 
-            // Section
-            Section::firstOrCreate(
-                ['code' => 'BIT-Y3-A'],
-                [
-                    'name' => 'BIT Year 3 - Section A',
-                    'programme_id' => $prog->id,
-                    'campus_id' => $campus->id,
-                    'year_level' => 3,
-                    'section_letter' => 'A',
-                    'capacity' => 60,
-                    'is_active' => true,
-                ]
-            );
+            // 2. All CBE Degree, Diploma & Certificate Programmes
+            $programmesList = [
+                // ICT Department
+                ['code' => 'BIT', 'name' => 'Bachelor of Information Technology (BIT)', 'level' => 'Bachelor', 'dept' => 'IT'],
+                ['code' => 'BBIS', 'name' => 'Bachelor of Business Information Systems (BBIS)', 'level' => 'Bachelor', 'dept' => 'IT'],
+                ['code' => 'ODIT', 'name' => 'Ordinary Diploma in Information Technology', 'level' => 'Diploma', 'dept' => 'IT'],
+                
+                // Accountancy
+                ['code' => 'BAC', 'name' => 'Bachelor of Accountancy (BACC)', 'level' => 'Bachelor', 'dept' => 'ACC'],
+                ['code' => 'ODAC', 'name' => 'Ordinary Diploma in Accountancy', 'level' => 'Diploma', 'dept' => 'ACC'],
+                ['code' => 'BACC-T', 'name' => 'Bachelor of Accountancy and Taxation', 'level' => 'Bachelor', 'dept' => 'ACC'],
 
-            // Course
+                // Procurement & Supply
+                ['code' => 'BPSM', 'name' => 'Bachelor of Procurement and Supplies Management (BPSM)', 'level' => 'Bachelor', 'dept' => 'PS'],
+                ['code' => 'ODPS', 'name' => 'Ordinary Diploma in Procurement & Supplies', 'level' => 'Diploma', 'dept' => 'PS'],
+
+                // Marketing
+                ['code' => 'BMKT', 'name' => 'Bachelor of Marketing (BMKT)', 'level' => 'Bachelor', 'dept' => 'MKT'],
+                ['code' => 'BDM', 'name' => 'Bachelor of Digital Marketing', 'level' => 'Bachelor', 'dept' => 'MKT'],
+                ['code' => 'ODMKT', 'name' => 'Ordinary Diploma in Marketing', 'level' => 'Diploma', 'dept' => 'MKT'],
+
+                // Business Administration
+                ['code' => 'BBA', 'name' => 'Bachelor of Business Administration (BBA)', 'level' => 'Bachelor', 'dept' => 'BA'],
+                ['code' => 'ODBA', 'name' => 'Ordinary Diploma in Business Administration', 'level' => 'Diploma', 'dept' => 'BA'],
+                ['code' => 'BHRM', 'name' => 'Bachelor of Human Resource Management', 'level' => 'Bachelor', 'dept' => 'BA'],
+
+                // Banking & Finance
+                ['code' => 'BBF', 'name' => 'Bachelor of Banking and Finance (BBF)', 'level' => 'Bachelor', 'dept' => 'BF'],
+                ['code' => 'ODBF', 'name' => 'Ordinary Diploma in Banking and Finance', 'level' => 'Diploma', 'dept' => 'BF'],
+
+                // Metrology
+                ['code' => 'BMET', 'name' => 'Bachelor of Metrology and Standardization', 'level' => 'Bachelor', 'dept' => 'MET'],
+                ['code' => 'ODMET', 'name' => 'Ordinary Diploma in Metrology & Standardization', 'level' => 'Diploma', 'dept' => 'MET'],
+            ];
+
+            foreach ($programmesList as $p) {
+                $deptId = $deptModels[$p['dept']]->id ?? $deptModels['IT']->id;
+                $prog = Programme::firstOrCreate(
+                    ['code' => $p['code']],
+                    [
+                        'name' => $p['name'],
+                        'department_id' => $deptId,
+                        'level' => $p['level'],
+                        'duration_years' => ($p['level'] === 'Bachelor' ? 3 : 2),
+                        'is_active' => true,
+                    ]
+                );
+
+                // Create a default Section A for each
+                Section::firstOrCreate(
+                    ['code' => "{$p['code']}-Y1-A"],
+                    [
+                        'name' => "{$p['name']} - Year 1 (Sec A)",
+                        'programme_id' => $prog->id,
+                        'campus_id' => $campus->id,
+                        'year_level' => 1,
+                        'section_letter' => 'A',
+                        'capacity' => 60,
+                        'is_active' => true,
+                    ]
+                );
+
+                Section::firstOrCreate(
+                    ['code' => "{$p['code']}-Y3-A"],
+                    [
+                        'name' => "{$p['name']} - Year 3 (Sec A)",
+                        'programme_id' => $prog->id,
+                        'campus_id' => $campus->id,
+                        'year_level' => 3,
+                        'section_letter' => 'A',
+                        'capacity' => 60,
+                        'is_active' => true,
+                    ]
+                );
+            }
+
+            // Default Course
+            $bitProg = Programme::where('code', 'BIT')->first();
             Course::firstOrCreate(
-                ['code' => 'CS301', 'programme_id' => $prog->id],
+                ['code' => 'CS301'],
                 [
                     'name' => 'Enterprise System Development',
+                    'programme_id' => $bitProg?->id ?? 1,
                     'credit_hours' => 3,
                     'year_level' => 3,
                     'is_active' => true,

@@ -129,6 +129,11 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::get('/field-attendance', [StudentDashboardController::class, 'fieldAttendance'])->name('field-attendance');
     Route::post('/field-attendance/checkin', [StudentDashboardController::class, 'checkInFieldAttendance'])->name('field-attendance.checkin');
 
+    // Field Placement Details & Student Self-Application
+    Route::get('/field-placement', [StudentDashboardController::class, 'fieldPlacementDetails'])->name('field-placement');
+    Route::get('/field-placement/apply', [StudentDashboardController::class, 'showFieldApplicationForm'])->name('field-placement.apply');
+    Route::post('/field-placement/apply', [StudentDashboardController::class, 'storeFieldApplication'])->name('field-placement.store-apply');
+
     // Notifications
     Route::get('/notifications', [StudentDashboardController::class, 'notifications'])->name('notifications');
     Route::post('/notifications/{notification}/mark-read', [StudentDashboardController::class, 'markNotificationRead'])->name('mark-notification-read');

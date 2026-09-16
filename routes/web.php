@@ -23,6 +23,10 @@ Route::get('/', function () {
 Route::get('admin/login', [AdminLoginController::class, 'create'])->name('admin.login');
 Route::post('admin/login', [AdminLoginController::class, 'store'])->name('admin.login.store');
 
+Route::get('/api/health-check', function () {
+    return response()->json(['status' => 'online', 'service' => 'CBE Portal', 'powered_by' => 'MOHAMEDYTECH PRO']);
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         $user = auth()->user();

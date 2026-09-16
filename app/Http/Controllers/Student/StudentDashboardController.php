@@ -485,5 +485,100 @@ class StudentDashboardController extends Controller
         return redirect()->route('student.field-attendance')
             ->with('success', 'GPS Attendance verified and recorded! (' . $geofence['message'] . ')');
     }
+
+    /**
+     * Show Field Placement Details
+     */
+    public function fieldPlacementDetails()
+    {
+        $student = auth()->user()->student;
+        $placement = $student ? $student->fieldPlacements()->with(['hostOrganization', 'supervisorAssignments.supervisor.user'])->first() : null;
+
+        return view('student.field-placement.index', compact('student', 'placement'));
+    }
+
+    /**
+     * Show Field Self-Application Form
+     */
+    public function showFieldApplicationForm()
+    {
+        $student = auth()->user()->student;
+        $existingPlacement = $student ? $student->fieldPlacements()->first() : null;
+
+        return view('student.field-placement.apply', compact('student', 'existingPlacement'));
+    }
+
+    /**
+     * Store Student Self-Applied Field Placement
+     */
+    public function storeFieldApplication(Request $request)
+    {
+        $request->validate([
+            'organization_name' => 'required|string|max:255',
+            'industry' => 'nullable|string|max:255',
+            'city' => 'required|string|max:100',
+            'address' => 'required|string|max:255',
+            'organization_phone' => 'nullable|string|max:25',
+            'organization_email' => 'nullable|email|max:255',
+            'supervisor_name' => 'required|string|max:255',
+            'supervisor_phone' => 'required|string|max:25',
+            'supervisor_title' => 'nullable|string|max:150',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'total_days' => 'required|integer|min:1|max:365',
+        ]);
+
+        $student = auth()->user()->student;
+        if (!$student) {
+            return back()->withErrors(['error' => 'Student record not found.']);
+        }
+
+        // 1. Create or find host organization
+        $hostOrg = \App\Models\HostOrganization::firstOrCreate(
+            ['name' => trim($request->input('organization_name'))],
+            [
+                'industry' => $request->input('industry') ?: 'Private/Public Sector',
+                'city' => $request->input('city'),
+                'address' => $request->input('address'),
+                'phone' => $request->input('organization_phone') ?: $request->input('supervisor_phone'),
+                'email' => $request->input('organization_email'),
+                'contact_person' => $request->input('supervisor_name'),
+                'contact_title' => $request->input('supervisor_title') ?: 'Field Supervisor',
+                'geofence_radius_meters' => 500,
+                'is_active' => true,
+            ]
+        );
+
+        // Update contact person and phone if needed
+        $hostOrg->update([
+            'contact_person' => $request->input('supervisor_name'),
+            'phone' => $request->input('supervisor_phone'),
+            'city' => $request->input('city'),
+            'address' => $request->input('address'),
+        ]);
+
+        $academicYear = \App\Models\AcademicYear::where('is_current', true)->first()
+            ?? \App\Models\AcademicYear::first();
+
+        // 2. Create or update field placement for this student
+        $placement = \App\Models\FieldPlacement::updateOrCreate(
+            ['student_id' => $student->id],
+            [
+                'host_organization_id' => $hostOrg->id,
+                'academic_year_id' => $academicYear ? $academicYear->id : null,
+                'start_date' => $request->input('start_date'),
+                'end_date' => $request->input('end_date'),
+                'total_days' => $request->input('total_days'),
+                'days_completed' => 0,
+                'field_progress' => 0,
+                'status' => 'active',
+                'notes' => 'Mwanafunzi amejaza taarifa za eneo lake la field. Msimamizi wa Eneo la Kazi: '
+                    . $request->input('supervisor_name') . ' (Simu: ' . $request->input('supervisor_phone') . ').',
+            ]
+        );
+
+        return redirect()->route('student.dashboard')
+            ->with('success', 'Taarifa zako za eneo la Field (Taasisi & Msimamizi) zimehifadhiwa kikamilifu!');
+    }
 }
 

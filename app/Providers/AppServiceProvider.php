@@ -29,6 +29,34 @@ class AppServiceProvider extends ServiceProvider
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
 
+        // Configure default stream SSL context for Symfony Mailer SMTP sockets
+        app('mail.manager')->extend('smtp', function (array $config) {
+            $factory = new \Symfony\Component\Mailer\Transport\Smtp\EsmtpTransportFactory();
+            $scheme = $config['scheme'] ?? (($config['port'] == 465) ? 'smtps' : 'smtp');
+            
+            $transport = $factory->create(new \Symfony\Component\Mailer\Transport\Dsn(
+                $scheme,
+                $config['host'],
+                $config['username'] ?? null,
+                $config['password'] ?? null,
+                $config['port'] ?? null,
+                $config
+            ));
+
+            $stream = $transport->getStream();
+            if ($stream instanceof \Symfony\Component\Mailer\Transport\Smtp\Stream\SocketStream) {
+                $stream->setStreamOptions([
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true,
+                    ]
+                ]);
+            }
+
+            return $transport;
+        });
+
         $this->configureDefaults();
     }
 

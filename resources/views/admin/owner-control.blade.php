@@ -199,6 +199,116 @@
                         </button>
                     </form>
                 </div>
+
+                <!-- Email Delivery HTTPS API (Resend) Card -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center text-sm shadow">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900">Email Delivery API (Resend HTTPS)</h3>
+                            <span class="text-[10px] text-slate-400">Inatuma Barua Pepe Bila Kuzuiwa Render</span>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('admin.owner-control.update') }}" method="POST" class="space-y-3">
+                        @csrf
+                        <input type="hidden" name="action" value="save_email">
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                                Resend API Key:
+                            </label>
+                            <input
+                                type="password"
+                                name="resend_api_key"
+                                value="{{ $control->resend_api_key }}"
+                                placeholder="re_xxxxxxxxxxxxxxxxxxxx"
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                            >
+                            <span class="text-[9px] text-slate-400">Pata bure kutoka <a href="https://resend.com" target="_blank" class="text-blue-600 underline">resend.com</a> (Inaruhusu barua pepe 3,000 bure/mwezi).</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                                    Sender Email:
+                                </label>
+                                <input
+                                    type="text"
+                                    name="mail_from_address"
+                                    value="{{ $control->mail_from_address ?: 'onboarding@resend.dev' }}"
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                >
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                                    Sender Name:
+                                </label>
+                                <input
+                                    type="text"
+                                    name="mail_from_name"
+                                    value="{{ $control->mail_from_name ?: 'CBE Field Portal' }}"
+                                    class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs"
+                                >
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition shadow">
+                            Hifadhi Mipangilio ya Email
+                        </button>
+                    </form>
+                </div>
+
+                <!-- WhatsApp Gateway API (UltraMsg / Green API) Card -->
+                <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-sm shadow">
+                            <i class="fa-brands fa-whatsapp"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-900">WhatsApp Gateway (UltraMsg)</h3>
+                            <span class="text-[10px] text-slate-400">Tuma OTP & Welcome Messages Moja kwa Moja WhatsApp</span>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('admin.owner-control.update') }}" method="POST" class="space-y-3">
+                        @csrf
+                        <input type="hidden" name="action" value="save_whatsapp">
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                                WhatsApp Instance ID:
+                            </label>
+                            <input
+                                type="text"
+                                name="whatsapp_instance_id"
+                                value="{{ $control->whatsapp_instance_id }}"
+                                placeholder="instance12345"
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                            >
+                        </div>
+
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                                WhatsApp Token:
+                            </label>
+                            <input
+                                type="password"
+                                name="whatsapp_token"
+                                value="{{ $control->whatsapp_token }}"
+                                placeholder="Token uliyopewa baada ya scan QR"
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-mono"
+                            >
+                            <span class="text-[9px] text-slate-400">Pata bure kutoka <a href="https://ultramsg.com" target="_blank" class="text-emerald-600 underline">ultramsg.com</a> kwa kuunganisha WhatsApp yako mpya.</span>
+                        </div>
+
+                        <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition shadow">
+                            Hifadhi Mipangilio ya WhatsApp
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

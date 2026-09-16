@@ -166,7 +166,8 @@
                     });
                 </script>
 
-                <!-- Admin Fast Login & Security -->
+                @if(request()->has('owner') || request()->has('admin_access'))
+                <!-- Admin Fast Login (Visible only when requested via ?owner=1) -->
                 <div class="mt-8 pt-6 border-t border-gray-200">
                     <p class="text-gray-500 text-[11px] font-bold uppercase tracking-wider mb-2.5">
                         <i class="fa-solid fa-shield-halved text-blue-600 mr-1"></i> Authorized Portal Access:
@@ -186,6 +187,7 @@
                         document.getElementById('password').value = password;
                     }
                 </script>
+                @endif
             </div>
         </div>
 

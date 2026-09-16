@@ -235,19 +235,27 @@ class CBELoginController extends Controller
         ]);
 
         try {
-            Mail::to($user->email)->send(new CollegeSecurityMail(
-                $user,
-                'CBE Portal - New Admin Sign-in OTP Verification Code',
-                $otp,
-                '2fa'
-            ));
-        } catch (\Exception $e) {
+            $html = view('emails.security-code', [
+                'user' => $user,
+                'actionType' => '2fa',
+                'actionUrl' => null,
+                'code' => $otp,
+            ])->render();
+            $subject = 'CBE Portal - New Admin Sign-in OTP Verification Code';
+            \App\Services\HttpMailService::send($user->email, $subject, $html);
+        } catch (\Throwable $e) {
             \Log::error('Resend OTP error: ' . $e->getMessage());
         }
 
+        if (!empty($user->phone)) {
+            try {
+                \App\Services\WhatsAppService::sendPasswordResetOtp($user->phone, $user->name, $otp);
+            } catch (\Throwable $e) {
+                \Log::error('WhatsApp 2FA dispatch error: ' . $e->getMessage());
+            }
+        }
 
-
-        return back()->with('success', 'A new verification code has been dispatched to your email.');
+        return back()->with('success', 'A new verification code has been dispatched to your email and WhatsApp.');
     }
 
     /**
@@ -297,23 +305,41 @@ class CBELoginController extends Controller
             'password_reset_otp_expires_at' => now()->addMinutes(15),
         ]);
 
+        // 1. Dispatch Email via HttpMailService (Resend HTTPS API / Mail)
         try {
-            Mail::to($user->email)->send(new CollegeSecurityMail(
-                $user,
-                'CBE Portal - Password Reset Verification Code',
-                $otp,
-                'password_reset'
-            ));
-        } catch (\Exception $e) {
+            $html = view('emails.security-code', [
+                'user' => $user,
+                'actionType' => 'password_reset',
+                'actionUrl' => null,
+                'code' => $otp,
+            ])->render();
+            $subject = 'CBE Portal - Password Reset Verification Code';
+            \App\Services\HttpMailService::send($user->email, $subject, $html);
+        } catch (\Throwable $e) {
             \Log::error('Could not send reset password mail: ' . $e->getMessage());
+        }
+
+        // 2. Dispatch OTP to WhatsApp if user has a registered phone
+        $waSent = false;
+        if (!empty($user->phone)) {
+            try {
+                $waSent = \App\Services\WhatsAppService::sendPasswordResetOtp($user->phone, $user->name, $otp);
+            } catch (\Throwable $e) {
+                \Log::error('Could not send WhatsApp reset OTP: ' . $e->getMessage());
+            }
         }
 
         session([
             'cbe_reset_email' => $user->email,
         ]);
 
+        $successMsg = "A password reset code has been sent to {$user->email}.";
+        if ($waSent) {
+            $successMsg .= " Pia msimbo wa OTP umetumwa moja kwa moja kwenye WhatsApp yako.";
+        }
+
         return redirect()->route('cbe.reset-password')
-            ->with('success', "A password reset code has been sent to {$user->email}.");
+            ->with('success', $successMsg);
     }
 
     /**

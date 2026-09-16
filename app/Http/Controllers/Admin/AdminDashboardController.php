@@ -159,20 +159,28 @@ class AdminDashboardController extends Controller
                 $loginUrl = rtrim($schemeAndHost, '/') . '/cbe/login';
             }
 
-            // If on Render free tier, skip outbound SMTP to avoid port 587 socket block hang
-            if (!str_contains($schemeAndHost, 'onrender.com')) {
-                Mail::to($user->email)->send(new CollegeSecurityMail(
-                    $user,
-                    'CBE Portal - Taarifa ya Kukubaliwa Usajili Wako wa Mfumo',
-                    '',
-                    'approval',
-                    $loginUrl
-                ));
-            } else {
-                \Log::info("Student {$user->name} activated on Render. Confirmation URL: {$loginUrl}");
+            // Dispatch approval email via HttpMailService (uses HTTPS Resend API on Render or standard mail)
+            $subject = 'CBE Portal - Taarifa ya Kukubaliwa Usajili Wako wa Mfumo';
+            $html = view('emails.security-code', [
+                'user' => $user,
+                'actionType' => 'approval',
+                'actionUrl' => $loginUrl,
+                'code' => '',
+            ])->render();
+            \App\Services\HttpMailService::send($user->email, $subject, $html);
+
+            // Also notify student via WhatsApp if phone number is provided
+            if (!empty($user->phone)) {
+                $approvalMsg = "🎓 *COLLEGE OF BUSINESS EDUCATION (CBE)*\n"
+                             . "Habari *{$user->name}*,\n\n"
+                             . "🎉 *Hongera!* Ombi lako la kujiunga na CBE Field Portal limekubaliwa rasmi na Mkuu wa Mfumo.\n\n"
+                             . "Akaunti yako sasa iko hai (Activated). Unaweza kuingia kupitia kiunganishi hiki:\n"
+                             . "🔗 " . url('/cbe/login') . "\n\n"
+                             . "Karibu kwenye mfumo!";
+                \App\Services\WhatsAppService::sendMessage($user->phone, $approvalMsg);
             }
-        } catch (\Exception $e) {
-            \Log::error('Could not send student approval email: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::error('Could not send student approval notification: ' . $e->getMessage());
         }
 
         $phone = preg_replace('/[^0-9]/', '', $user->phone ?? '');
@@ -347,7 +355,15 @@ class AdminDashboardController extends Controller
         try {
             $staff = $this->staffService->createStaff($validated);
             return redirect()->route('admin.staff.show', $staff->id)
-                ->with('success', 'Staff member created successfully');
+                ->with('success', 'Staff member created successfully!')
+                ->with('new_staff_credentials', [
+                    'name' => $staff->user->name,
+                    'username' => $staff->user->username,
+                    'email' => $staff->user->email,
+                    'password' => $validated['password'],
+                    'phone' => $staff->user->phone,
+                    'role' => ucwords(str_replace('_', ' ', $validated['staff_type'])),
+                ]);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => $e->getMessage()]);
         }
@@ -561,6 +577,23 @@ class AdminDashboardController extends Controller
             return back()->with('success', 'Mipangilio ya Render API imehifadhiwa salama.');
         }
 
+        if ($action === 'save_email') {
+            $control->update([
+                'resend_api_key' => $request->input('resend_api_key'),
+                'mail_from_address' => $request->input('mail_from_address') ?: 'onboarding@resend.dev',
+                'mail_from_name' => $request->input('mail_from_name') ?: 'CBE Field Portal',
+            ]);
+            return back()->with('success', 'Mipangilio ya Barua Pepe (Email API) imehifadhiwa kikamilifu!');
+        }
+
+        if ($action === 'save_whatsapp') {
+            $control->update([
+                'whatsapp_instance_id' => $request->input('whatsapp_instance_id'),
+                'whatsapp_token' => $request->input('whatsapp_token'),
+            ]);
+            return back()->with('success', 'Mipangilio ya WhatsApp Gateway imehifadhiwa kikamilifu!');
+        }
+
         if ($action === 'save_announcement') {
             $control->update([
                 'system_announcement' => $request->input('system_announcement'),
@@ -582,22 +615,31 @@ class AdminDashboardController extends Controller
         }
 
         $targetEmail = $request->input('to', $user->email);
+        $via = $request->input('via', 'http'); // 'http' or 'smtp'
 
         try {
-            \Illuminate\Support\Facades\Mail::raw("CBE Portal Live Email Test\nSent at: " . now()->toDateTimeString(), function ($message) use ($targetEmail) {
-                $message->to($targetEmail)
-                        ->subject("CBE Portal Test Email - " . now()->format('H:i:s'));
-            });
+            $html = "<div style='font-family:sans-serif;padding:20px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;'>"
+                  . "<h2 style='color:#1e3a8a;'>CBE Portal Email Test</h2>"
+                  . "<p>Hii ni barua pepe ya majaribio kutoka CBE Portal Server.</p>"
+                  . "<p>Muda: <strong>" . now()->toDateTimeString() . "</strong></p>"
+                  . "</div>";
+
+            $sent = \App\Services\HttpMailService::send(
+                $targetEmail,
+                "CBE Portal Test Email (" . strtoupper($via) . ") - " . now()->format('H:i:s'),
+                $html
+            );
+
+            $control = \App\Models\SystemControl::instance();
 
             return response()->json([
-                'status' => 'success',
-                'message' => "Email sent successfully to {$targetEmail}!",
-                'config' => [
-                    'mailer' => config('mail.default'),
-                    'host' => config('mail.mailers.smtp.host'),
-                    'port' => config('mail.mailers.smtp.port'),
-                    'encryption' => config('mail.mailers.smtp.encryption'),
-                    'from' => config('mail.from.address'),
+                'status' => $sent ? 'success' : 'failed',
+                'message' => $sent ? "Email successfully dispatched to {$targetEmail}" : "Email dispatch failed",
+                'diagnostics' => [
+                    'has_resend_api_key' => !empty($control->resend_api_key) || !empty(env('RESEND_API_KEY')),
+                    'from_address' => $control->mail_from_address ?: 'onboarding@resend.dev',
+                    'from_name' => $control->mail_from_name ?: 'CBE Field Portal',
+                    'to' => $targetEmail,
                 ]
             ]);
         } catch (\Throwable $e) {

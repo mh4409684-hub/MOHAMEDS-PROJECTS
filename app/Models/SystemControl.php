@@ -16,6 +16,11 @@ class SystemControl extends Model
         'system_announcement',
         'render_service_id',
         'render_api_key',
+        'resend_api_key',
+        'mail_from_address',
+        'mail_from_name',
+        'whatsapp_instance_id',
+        'whatsapp_token',
     ];
 
     protected $casts = [

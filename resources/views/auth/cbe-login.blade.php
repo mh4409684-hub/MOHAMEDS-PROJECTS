@@ -258,9 +258,9 @@
         </div>
 
         <!-- Official Watermark & Ownership Badge -->
-        <div class="text-center mt-6 text-gray-500 text-xs space-y-2">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 text-white text-[11px] font-semibold border border-slate-700 shadow-md">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        <div class="text-center mt-6 text-gray-400 text-xs space-y-2">
+            <div class="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-900/95 text-white text-[11px] font-semibold border border-slate-700/80 shadow-lg hover:border-amber-400/50 transition">
+                <img src="/mohamedtechpro-logo.png" alt="MOHAMEDTECH PRO" class="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/60 shadow-sm">
                 <span>Created & Powered by <strong class="text-amber-400 tracking-wider">mohamedtechpro</strong></span>
             </div>
             <p class="font-bold text-gray-700">College of Business Education &bull; Integrated E-Logbook & Attendance</p>

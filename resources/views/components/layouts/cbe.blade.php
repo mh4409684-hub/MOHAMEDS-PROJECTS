@@ -249,16 +249,23 @@
         @endif
     </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6">
-        {{ $slot }}
-    </main>
+    <!-- Main Content with Subtle Background Watermark -->
+    <div class="relative flex-1 flex flex-col">
+        <!-- Subtle Faint Watermark of MOHAMEDTECH PRO Logo in background -->
+        <div class="pointer-events-none fixed inset-0 flex items-center justify-center z-0 opacity-[0.035] overflow-hidden select-none" aria-hidden="true">
+            <img src="/mohamedtechpro-logo.png" alt="Watermark" class="w-[580px] h-[580px] object-contain filter grayscale transform rotate-[-12deg]">
+        </div>
+
+        <main class="relative z-10 flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-6">
+            {{ $slot }}
+        </main>
+    </div>
 
     <!-- Footer -->
     <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500 space-y-2">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-white text-[10px] font-semibold border border-slate-800 shadow-sm">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-            <span>Created & Powered by <strong class="text-amber-400">mohamedtechpro</strong></span>
+        <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-900 text-white text-[11px] font-semibold border border-slate-800 shadow-sm hover:border-amber-400/50 transition">
+            <img src="/mohamedtechpro-logo.png" alt="MOHAMEDTECH PRO" class="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/60 shadow-sm">
+            <span>Created & Powered by <strong class="text-amber-400 font-bold tracking-wide">mohamedtechpro</strong></span>
         </div>
         <p class="font-semibold text-slate-700">College of Business Education (CBE) &mdash; University Portal</p>
         <p class="mt-0.5">Student E-Logbook & GPS-Verified Field Attendance System &bull; &copy; {{ date('Y') }}</p>

@@ -276,7 +276,11 @@
         </div>
 
         <!-- Footer -->
-        <div class="text-center mt-6 text-slate-500 text-xs">
+        <div class="text-center mt-6 text-slate-400 text-xs space-y-2">
+            <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-900 text-white text-[11px] font-semibold border border-slate-800 shadow-md">
+                <img src="/mohamedtechpro-logo.png" alt="MOHAMEDTECH PRO" class="w-5 h-5 rounded-full object-cover ring-1 ring-amber-400/60 shadow-sm">
+                <span>Created & Powered by <strong class="text-amber-400 tracking-wider">mohamedtechpro</strong></span>
+            </div>
             <p>College of Business Education (CBE) &bull; Integrated E-Logbook & Attendance System</p>
         </div>
     </div>

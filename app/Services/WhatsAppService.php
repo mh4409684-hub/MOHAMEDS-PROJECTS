@@ -33,7 +33,7 @@ class WhatsAppService
 
         try {
             // UltraMsg Gateway API (Standard REST JSON over HTTPS Port 443)
-            $response = Http::timeout(10)->post("https://api.ultramsg.com/{$instanceId}/messages/chat", [
+            $response = Http::withoutVerifying()->timeout(15)->asForm()->post("https://api.ultramsg.com/{$instanceId}/messages/chat", [
                 'token' => $token,
                 'to' => $cleanedPhone,
                 'body' => $message,

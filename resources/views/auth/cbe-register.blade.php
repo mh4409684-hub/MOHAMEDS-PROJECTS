@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Favicon & PWA Icons -->
+    <link rel="icon" type="image/png" href="/mohamedtechpro-logo.png">
+    <link rel="apple-touch-icon" href="/mohamedtechpro-logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#030712">
     <title>Student Registration - College of Business Education (CBE)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -10,7 +15,7 @@
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
     </style>
 </head>
-<body class="bg-slate-900 min-h-screen flex items-center justify-center p-4 selection:bg-blue-600 selection:text-white">
+<body class="bg-slate-950 min-h-screen flex items-center justify-center p-4 selection:bg-blue-600 selection:text-white">
     <div class="w-full max-w-2xl my-8">
         <!-- Logo & Header -->
         <div class="text-center mb-6">

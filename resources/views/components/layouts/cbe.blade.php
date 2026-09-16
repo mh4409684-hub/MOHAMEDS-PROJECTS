@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{{ $title ?? 'CBE E-Logbook & Attendance System' }}</title>
     
-    <!-- PWA & Mobile Web App Meta -->
+    <!-- Favicon & PWA Icons -->
+    <link rel="icon" type="image/png" href="/mohamedtechpro-logo.png">
+    <link rel="apple-touch-icon" href="/mohamedtechpro-logo.png">
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1e3a8a">
+    <meta name="theme-color" content="#030712">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CBE Portal">
+    <meta name="apple-mobile-web-app-title" content="MOHAMEDTECH PRO">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -31,9 +33,77 @@
             background-image: radial-gradient(rgba(59, 130, 246, 0.15) 1px, transparent 0);
             background-size: 24px 24px;
         }
+
+        /* App Splash Screen Animations */
+        #app-splash-screen {
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+        #app-splash-screen.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .splash-rainbow-text {
+            background: linear-gradient(90deg, #ff007f, #ff7b00, #ffee00, #00f0ff, #7b00ff, #ff007f);
+            background-size: 400% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow-slide 3.5s linear infinite;
+        }
+        @keyframes rainbow-slide {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        .splash-glow {
+            box-shadow: 0 0 50px rgba(59, 130, 246, 0.5), 0 0 100px rgba(236, 72, 153, 0.3);
+        }
     </style>
 </head>
 <body class="h-full flex flex-col font-sans text-slate-800 antialiased">
+    <!-- App Startup Splash Screen (Powered by MOHAMEDTECH PRO) -->
+    <div id="app-splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 px-4 text-center select-none">
+        <div class="relative flex flex-col items-center max-w-sm w-full">
+            <!-- Glow circle background -->
+            <div class="absolute -top-10 w-48 h-48 bg-gradient-to-tr from-blue-600/30 to-pink-600/30 rounded-full blur-3xl -z-10 animate-pulse"></div>
+
+            <!-- MohamedTechPro Logo -->
+            <div class="relative w-28 h-28 mb-5 rounded-3xl overflow-hidden p-1 bg-gradient-to-tr from-blue-500 via-purple-500 to-amber-400 splash-glow animate-bounce" style="animation-duration: 2.5s;">
+                <img src="/mohamedtechpro-logo.png" alt="MOHAMEDTECH PRO" class="w-full h-full object-cover rounded-[22px] bg-slate-900">
+            </div>
+
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-slate-700/80 text-[11px] font-bold text-amber-400 mb-2.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>OFFICIAL SECURE PORTAL</span>
+            </div>
+
+            <h2 class="text-xl font-black tracking-wider splash-rainbow-text uppercase">
+                POWERED BY MOHAMEDYTECH PRO
+            </h2>
+            <p class="text-xs text-slate-400 mt-1 mb-6 font-medium">
+                CBE E-Logbook & Field Attendance Management
+            </p>
+
+            <!-- Loading indicator -->
+            <div class="w-44 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-blue-500 via-indigo-400 to-pink-500 w-full animate-[pulse_1s_ease-in-out_infinite]"></div>
+            </div>
+            <span class="text-[11px] text-slate-500 mt-3 font-semibold tracking-wide">Inafungua akaunti yako...</span>
+        </div>
+    </div>
+
+    <script>
+        // Dismiss splash screen quickly once page DOM is ready
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('app-splash-screen');
+                if (splash) {
+                    splash.classList.add('fade-out');
+                    setTimeout(() => splash.remove(), 600);
+                }
+            }, 1000);
+        });
+    </script>
+
     <!-- Navbar -->
     <header class="sticky top-0 z-40 bg-slate-900 text-white shadow-md border-b border-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

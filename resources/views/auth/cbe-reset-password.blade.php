@@ -34,7 +34,17 @@
                     </div>
                 @endif
 
-
+                @if (session('cbe_last_otp_preview'))
+                    <div class="mb-5 bg-blue-50 border border-blue-200 rounded-xl p-3.5 text-xs text-blue-900 flex items-center justify-between">
+                        <div>
+                            <span class="block font-bold text-blue-950">Msimbo wako wa OTP:</span>
+                            <span class="font-mono text-lg font-black tracking-widest text-blue-700">{{ session('cbe_last_otp_preview') }}</span>
+                        </div>
+                        <button type="button" onclick="document.getElementById('otp').value='{{ session('cbe_last_otp_preview') }}'" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs shadow transition">
+                            Jaza OTP Hapa &rarr;
+                        </button>
+                    </div>
+                @endif
 
                 <form method="POST" action="{{ route('cbe.reset-password.store') }}" class="space-y-4">
                     @csrf

@@ -27,6 +27,16 @@
                     </div>
                     <p style="font-size: 12px; color: #64748b; margin-top: 8px;">(This code is valid for 10 minutes)</p>
                 </div>
+            @elseif($actionType === 'registration')
+                <p style="font-size: 14px; color: #1e40af; background-color: #eff6ff; padding: 14px; border-radius: 10px; border: 1px solid #bfdbfe;">
+                    📩 <strong>Usajili Wako Umepokelewa!</strong> Asante kwa kujiunga na mfumo wa mafunzo kwa vitendo wa <strong>College of Business Education (CBE)</strong>.
+                </p>
+                <p style="font-size: 14px; margin-top: 15px;">
+                    Akaunti yako ya mwanafunzi (Reg No: <strong>{{ $user->registration_number }}</strong>, Username: <strong>{{ $user->username }}</strong>) imehifadhiwa salama kwenye mfumo.
+                </p>
+                <p style="font-size: 13px; color: #475569;">
+                    Kwa sasa akaunti yako inasubiri uhakiki wa kiusalama kutoka kwa Mkuu wa Mfumo (Administrator). Mara tu itakapoidhinishwa, utatumiwa ujumbe rasmi na utaweza kuingia mara moja.
+                </p>
             @elseif($actionType === 'approval')
                 <p style="font-size: 14px; color: #065f46; background-color: #ecfdf5; padding: 14px; border-radius: 10px; border: 1px solid #a7f3d0;">
                     🎉 <strong>Hongera!</strong> Ombi lako la kujisajili kama mwanafunzi wa <strong>College of Business Education (CBE)</strong> limehakikiwa na <strong>limekubaliwa rasmi</strong> na Mkuu wa Mfumo (Admin).

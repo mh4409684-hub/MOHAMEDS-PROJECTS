@@ -107,6 +107,38 @@ class CBELoginController extends Controller
                 'enrollment_date' => now(),
                 'notes' => 'Self-registered student awaiting administrator verification and approval.',
             ]);
+
+            // 1. Send Automatic Welcome/Registration Email to Student
+            try {
+                $html = view('emails.security-code', [
+                    'user' => $user,
+                    'actionType' => 'registration',
+                    'actionUrl' => null,
+                    'code' => '',
+                ])->render();
+                \App\Services\HttpMailService::send(
+                    $user->email,
+                    'CBE Portal - Usajili Wako Umepokelewa Kikamilifu',
+                    $html
+                );
+            } catch (\Throwable $e) {
+                \Log::warning('Could not send registration confirmation email: ' . $e->getMessage());
+            }
+
+            // 2. Dispatch WhatsApp Notification if phone provided
+            if (!empty($user->phone)) {
+                try {
+                    $regMsg = "🎓 *COLLEGE OF BUSINESS EDUCATION (CBE)*\n"
+                            . "Habari *{$user->name}*,\n\n"
+                            . "Usajili wako wa kujiunga na CBE Field Portal umepokelewa kikamilifu!\n\n"
+                            . "📋 Reg No: *{$user->registration_number}*\n"
+                            . "👤 Username: *{$user->username}*\n\n"
+                            . "Akaunti yako inasubiri idhini (approval) kutoka kwa Mkuu wa Mfumo. Utataarifiwa mara tu itakapoidhinishwa.";
+                    \App\Services\WhatsAppService::sendMessage($user->phone, $regMsg);
+                } catch (\Throwable $e) {
+                    \Log::warning('Could not send registration WhatsApp: ' . $e->getMessage());
+                }
+            }
         });
 
         return redirect()->route('cbe.login')->with('success', 'Usajili wako umepokelewa kikamilifu! Akaunti yako sasa inasubiri uhakiki na idhini kutoka kwa Mkuu wa Mfumo (Admin). Mara tu itakapoidhinishwa, utatumiwa barua pepe na utaweza kuingia.');
@@ -333,13 +365,14 @@ class CBELoginController extends Controller
             'cbe_reset_email' => $user->email,
         ]);
 
-        $successMsg = "A password reset code has been sent to {$user->email}.";
+        $successMsg = "Msimbo wa OTP wa kubadili nenosiri umetumwa kwa barua pepe {$user->email}.";
         if ($waSent) {
-            $successMsg .= " Pia msimbo wa OTP umetumwa moja kwa moja kwenye WhatsApp yako.";
+            $successMsg .= " Pia umetumwa moja kwa moja kwenye WhatsApp yako.";
         }
 
         return redirect()->route('cbe.reset-password')
-            ->with('success', $successMsg);
+            ->with('success', $successMsg)
+            ->with('cbe_last_otp_preview', $otp);
     }
 
     /**

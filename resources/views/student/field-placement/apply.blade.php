@@ -66,6 +66,79 @@
                         <input type="email" name="organization_email" value="{{ old('organization_email', $existingPlacement?->hostOrganization?->email) }}" placeholder="mfano: info@company.co.tz" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
                     </div>
                 </div>
+            <!-- Alama Sahihi za GPS za Eneo la Taasisi (Geofence Location) -->
+            <div class="bg-gradient-to-br from-slate-50 to-blue-50/50 p-5 rounded-2xl border border-blue-100">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3 border-b border-blue-200/60 pb-2">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-location-crosshairs text-blue-600"></i> Alama Sahihi za GPS ya Taasisi (Geofence Location)
+                        </h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">
+                            Alama hizi za setilaiti zinatumika kupima na kuthibitisha uwepo wako kazini. Huwezi kupiga mahudhurio ukiwa nje ya eneo hili.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onclick="detectCurrentLocationForOrg()"
+                        class="px-3.5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5 shrink-0 active:scale-95"
+                    >
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span>Nasa GPS ya Sasa Ukiwa Kazini</span>
+                    </button>
+                </div>
+
+                <!-- Map Container -->
+                <div class="relative rounded-2xl overflow-hidden border border-slate-300 shadow-sm mb-3">
+                    <div id="org-location-map" class="w-full h-64 sm:h-72 bg-slate-100 z-10"></div>
+                    <div class="absolute top-2 right-2 z-20 bg-slate-900/90 backdrop-blur-md text-white text-[10px] px-2.5 py-1 rounded-lg border border-slate-700 flex items-center gap-1.5 shadow">
+                        <i class="fa-solid fa-hand-pointer text-amber-400"></i>
+                        <span>Bofya au buruta pini kuweka ofisini</span>
+                    </div>
+                </div>
+
+                <!-- Coordinates Inputs & Radius -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Latitude (Nyuzi za Kusini/Kaskazini)</label>
+                        <input
+                            type="text"
+                            id="org-latitude"
+                            name="latitude"
+                            value="{{ old('latitude', $existingPlacement?->hostOrganization?->latitude ?? -6.816064) }}"
+                            required
+                            readonly
+                            class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono text-xs text-slate-800 font-semibold focus:outline-none"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Longitude (Nyuzi za Mashariki)</label>
+                        <input
+                            type="text"
+                            id="org-longitude"
+                            name="longitude"
+                            value="{{ old('longitude', $existingPlacement?->hostOrganization?->longitude ?? 39.280358) }}"
+                            required
+                            readonly
+                            class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white font-mono text-xs text-slate-800 font-semibold focus:outline-none"
+                        >
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">Upeo wa Eneo (Radius)</label>
+                        <select
+                            name="geofence_radius_meters"
+                            id="org-radius"
+                            onchange="updateGeofenceRadius(this.value)"
+                            class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-xs font-semibold focus:outline-none text-slate-800"
+                        >
+                            <option value="100" {{ (old('geofence_radius_meters', $existingPlacement?->hostOrganization?->geofence_radius_meters) == 100) ? 'selected' : '' }}>Mita 100 (Jengo Moja)</option>
+                            <option value="200" {{ (old('geofence_radius_meters', $existingPlacement?->hostOrganization?->geofence_radius_meters ?? 200) == 200) ? 'selected' : '' }}>Mita 200 (Kawaida / Standard)</option>
+                            <option value="300" {{ (old('geofence_radius_meters', $existingPlacement?->hostOrganization?->geofence_radius_meters) == 300) ? 'selected' : '' }}>Mita 300 (Eneo Kubwa la Taasisi)</option>
+                            <option value="500" {{ (old('geofence_radius_meters', $existingPlacement?->hostOrganization?->geofence_radius_meters) == 500) ? 'selected' : '' }}>Mita 500 (Campus / Kiwanda)</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <!-- Taarifa za Supervisor wa Field (Kazini) -->
@@ -124,4 +197,123 @@
             </div>
         </form>
     </div>
+
+    @push('scripts')
+    <script>
+        let orgMap = null;
+        let orgMarker = null;
+        let orgCircle = null;
+
+        function initOrgLocationMap() {
+            const latInput = document.getElementById('org-latitude');
+            const lonInput = document.getElementById('org-longitude');
+            const radiusInput = document.getElementById('org-radius');
+
+            let currentLat = parseFloat(latInput.value) || -6.816064;
+            let currentLon = parseFloat(lonInput.value) || 39.280358;
+            let currentRadius = parseInt(radiusInput.value) || 200;
+
+            const mapContainer = document.getElementById('org-location-map');
+            if (!mapContainer || typeof L === 'undefined') return;
+
+            orgMap = L.map('org-location-map').setView([currentLat, currentLon], 16);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(orgMap);
+
+            // Workplace Pin
+            orgMarker = L.marker([currentLat, currentLon], {
+                draggable: true,
+                title: "Ofisi / Jengo la Taasisi"
+            }).addTo(orgMap);
+
+            orgMarker.bindPopup("<b>Eneo la Ofisi / Taasisi</b><br>Buruta pini hii kuweka jengo sahihi.").openPopup();
+
+            // Geofence Circle
+            orgCircle = L.circle([currentLat, currentLon], {
+                color: '#2563eb',
+                fillColor: '#3b82f6',
+                fillOpacity: 0.2,
+                radius: currentRadius
+            }).addTo(orgMap);
+
+            // On marker drag
+            orgMarker.on('dragend', function(e) {
+                const pos = orgMarker.getLatLng();
+                updateCoordinates(pos.lat, pos.lng);
+            });
+
+            // On map click
+            orgMap.on('click', function(e) {
+                orgMarker.setLatLng(e.latlng);
+                updateCoordinates(e.latlng.lat, e.latlng.lng);
+            });
+
+            // Fix map size inside flex layout
+            setTimeout(() => {
+                orgMap.invalidateSize();
+            }, 300);
+        }
+
+        function updateCoordinates(lat, lng) {
+            document.getElementById('org-latitude').value = lat.toFixed(6);
+            document.getElementById('org-longitude').value = lng.toFixed(6);
+            if (orgCircle) {
+                orgCircle.setLatLng([lat, lng]);
+            }
+        }
+
+        function updateGeofenceRadius(radius) {
+            const r = parseInt(radius) || 200;
+            if (orgCircle) {
+                orgCircle.setRadius(r);
+            }
+        }
+
+        function detectCurrentLocationForOrg() {
+            if (!navigator.geolocation) {
+                alert("Kivinjari chako hakiruhusu kutambua eneo la GPS.");
+                return;
+            }
+
+            const btn = event.currentTarget;
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Inanasa GPS ya Sasa...</span>`;
+
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    const acc = Math.round(pos.coords.accuracy);
+
+                    updateCoordinates(lat, lon);
+                    if (orgMap && orgMarker) {
+                        orgMap.setView([lat, lon], 17);
+                        orgMarker.setLatLng([lat, lon]);
+                        orgMarker.bindPopup(`<b>Ofisi Yako Imehifadhiwa!</b><br>Usahihi wa GPS: &plusmn;${acc}m`).openPopup();
+                    }
+
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fa-solid fa-check"></i> <span>GPS Imerekodiwa (&plusmn;${acc}m)</span>`;
+                    setTimeout(() => {
+                        btn.innerHTML = originalHtml;
+                    }, 4000);
+                },
+                function(err) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                    alert("Hitilafu ya GPS: Hakikisha umewasha Location kwenye simu yako na umeruhusu browser kuona eneo lako.");
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initOrgLocationMap();
+        });
+    </script>
+    @endpush
 </x-layouts.cbe>

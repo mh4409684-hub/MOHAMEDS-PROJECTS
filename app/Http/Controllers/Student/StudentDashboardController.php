@@ -432,13 +432,14 @@ class StudentDashboardController extends Controller
     }
 
     /**
-     * Handle student GPS Check-in
+     * Handle student GPS Check-in (Strict Anti-Cheat Verification)
      */
     public function checkInFieldAttendance(Request $request)
     {
         $request->validate([
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
+            'accuracy' => 'nullable|numeric',
             'notes' => 'nullable|string|max:500',
         ]);
 
@@ -451,15 +452,22 @@ class StudentDashboardController extends Controller
             return back()->withErrors(['error' => 'No active field placement found.']);
         }
 
+        // Anti-Cheat 1: Reject rough/spoofed coordinates with very poor accuracy (> 250m)
+        if ($request->filled('accuracy') && (float)$request->input('accuracy') > 250) {
+            return back()->withErrors([
+                'location' => 'Ishara ya GPS ni hafifu mno (&plusmn;' . round($request->input('accuracy')) . 'm). Tafadhali toka nje au simama karibu na dirisha ili setilaiti ya GPS inase eneo lako vizuri.'
+            ])->withInput();
+        }
+
         $studentLat = (float) $request->input('latitude');
         $studentLon = (float) $request->input('longitude');
 
-        // Check geofence
+        // Anti-Cheat 2: Check server-side Haversine geofence strictly
         $geofence = $this->fieldService->verifyGeofence($placement, $studentLat, $studentLon);
 
         if (!$geofence['within_geofence']) {
             return back()->withErrors([
-                'location' => 'GPS Verification Failed: ' . $geofence['message']
+                'location' => $geofence['message']
             ])->withInput();
         }
 
@@ -467,11 +475,16 @@ class StudentDashboardController extends Controller
         $existing = $placement->fieldAttendances()->where('attendance_date', $today)->first();
 
         if ($existing && $existing->check_in_time) {
-            return back()->with('info', 'You have already checked in today at ' . $existing->check_in_time);
+            return back()->with('info', 'Tayari umesharekodi mahudhurio ya leo saa ' . $existing->check_in_time);
         }
 
         $now = now();
         $status = $now->format('H:i') > '09:00' ? 'late' : 'present';
+
+        $auditNote = "[GPS: {$geofence['distance_formatted']} kutoka {$geofence['org_name']} - IP: {$request->ip()}]";
+        if ($request->filled('notes')) {
+            $auditNote .= " " . $request->input('notes');
+        }
 
         $this->fieldService->recordFieldAttendance($placement, [
             'attendance_date' => $today,
@@ -479,11 +492,11 @@ class StudentDashboardController extends Controller
             'status' => $status,
             'latitude' => (string) $studentLat,
             'longitude' => (string) $studentLon,
-            'notes' => $request->input('notes'),
+            'notes' => $auditNote,
         ]);
 
         return redirect()->route('student.field-attendance')
-            ->with('success', 'GPS Attendance verified and recorded! (' . $geofence['message'] . ')');
+            ->with('success', 'Mahudhurio yamethibitishwa na kurekodiwa kikamilifu! (' . $geofence['message'] . ')');
     }
 
     /**
@@ -509,7 +522,7 @@ class StudentDashboardController extends Controller
     }
 
     /**
-     * Store Student Self-Applied Field Placement
+     * Store Student Self-Applied Field Placement with Accurate GPS Coordinates
      */
     public function storeFieldApplication(Request $request)
     {
@@ -518,6 +531,9 @@ class StudentDashboardController extends Controller
             'industry' => 'nullable|string|max:255',
             'city' => 'required|string|max:100',
             'address' => 'required|string|max:255',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+            'geofence_radius_meters' => 'nullable|integer|min:50|max:1000',
             'organization_phone' => 'nullable|string|max:25',
             'organization_email' => 'nullable|email|max:255',
             'supervisor_name' => 'required|string|max:255',
@@ -533,6 +549,17 @@ class StudentDashboardController extends Controller
             return back()->withErrors(['error' => 'Student record not found.']);
         }
 
+        $lat = $request->filled('latitude') ? (float)$request->input('latitude') : null;
+        $lon = $request->filled('longitude') ? (float)$request->input('longitude') : null;
+        $radius = $request->filled('geofence_radius_meters') ? (int)$request->input('geofence_radius_meters') : 200;
+
+        // Auto fallback to accurate city coordinates if not supplied
+        if (empty($lat) || empty($lon)) {
+            $cityCoords = \App\Models\HostOrganization::getCityDefaultCoordinates($request->input('city'));
+            $lat = $cityCoords['lat'];
+            $lon = $cityCoords['lon'];
+        }
+
         // 1. Create or find host organization
         $hostOrg = \App\Models\HostOrganization::firstOrCreate(
             ['name' => trim($request->input('organization_name'))],
@@ -540,17 +567,22 @@ class StudentDashboardController extends Controller
                 'industry' => $request->input('industry') ?: 'Private/Public Sector',
                 'city' => $request->input('city'),
                 'address' => $request->input('address'),
+                'latitude' => $lat,
+                'longitude' => $lon,
+                'geofence_radius_meters' => $radius,
                 'phone' => $request->input('organization_phone') ?: $request->input('supervisor_phone'),
                 'email' => $request->input('organization_email'),
                 'contact_person' => $request->input('supervisor_name'),
                 'contact_title' => $request->input('supervisor_title') ?: 'Field Supervisor',
-                'geofence_radius_meters' => 500,
                 'is_active' => true,
             ]
         );
 
-        // Update contact person and phone if needed
+        // Always update coordinates, radius, and supervisor details
         $hostOrg->update([
+            'latitude' => $lat,
+            'longitude' => $lon,
+            'geofence_radius_meters' => $radius,
             'contact_person' => $request->input('supervisor_name'),
             'phone' => $request->input('supervisor_phone'),
             'city' => $request->input('city'),
@@ -573,12 +605,13 @@ class StudentDashboardController extends Controller
                 'field_progress' => 0,
                 'status' => 'active',
                 'notes' => 'Mwanafunzi amejaza taarifa za eneo lake la field. Msimamizi wa Eneo la Kazi: '
-                    . $request->input('supervisor_name') . ' (Simu: ' . $request->input('supervisor_phone') . ').',
+                    . $request->input('supervisor_name') . ' (Simu: ' . $request->input('supervisor_phone') . '). GPS: '
+                    . round($lat, 5) . ', ' . round($lon, 5) . ' (Upeo: ' . $radius . 'm).',
             ]
         );
 
         return redirect()->route('student.dashboard')
-            ->with('success', 'Taarifa zako za eneo la Field (Taasisi & Msimamizi) zimehifadhiwa kikamilifu!');
+            ->with('success', 'Taarifa za eneo la Field na Alama za GPS (Lat: ' . round($lat, 4) . ', Lon: ' . round($lon, 4) . ') zimehifadhiwa kikamilifu!');
     }
 }
 

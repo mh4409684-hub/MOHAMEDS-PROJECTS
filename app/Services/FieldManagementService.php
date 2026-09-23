@@ -274,17 +274,32 @@ class FieldManagementService
     }
 
     /**
-     * Verify if given coordinates are within the organization geofence
+     * Verify if given coordinates are within the organization geofence (Strict Anti-Cheat)
      */
     public function verifyGeofence(FieldPlacement $placement, float $studentLat, float $studentLon): array
     {
         $org = $placement->hostOrganization;
 
-        if (!$org || !$org->latitude || !$org->longitude) {
+        // If organization somehow has no coordinates, auto-assign from city
+        if ($org && (empty($org->latitude) || empty($org->longitude))) {
+            $coords = \App\Models\HostOrganization::getCityDefaultCoordinates($org->city);
+            $org->update([
+                'latitude' => $coords['lat'],
+                'longitude' => $coords['lon'],
+                'geofence_radius_meters' => 200,
+            ]);
+            $org->refresh();
+        }
+
+        if (!$org || empty($org->latitude) || empty($org->longitude)) {
             return [
-                'within_geofence' => true,
+                'within_geofence' => false,
                 'distance' => 0,
-                'message' => 'No GPS coordinate baseline configured for host organization.',
+                'allowed_radius' => 0,
+                'org_name' => $org->name ?? 'Taasisi',
+                'org_latitude' => null,
+                'org_longitude' => null,
+                'message' => 'Hitilafu: Taasisi hii haijathibitishwa na alama za GPS. Wasiliana na Msimamizi.',
             ];
         }
 
@@ -295,16 +310,24 @@ class FieldManagementService
             (float) $org->longitude
         );
 
-        $allowedRadius = $org->geofence_radius_meters ?: 300;
+        $allowedRadius = (int) ($org->geofence_radius_meters ?: 200);
         $isWithin = $distance <= $allowedRadius;
+
+        $distanceFormatted = $distance >= 1000 
+            ? round($distance / 1000, 2) . ' km' 
+            : round($distance) . ' m';
 
         return [
             'within_geofence' => $isWithin,
             'distance' => $distance,
+            'distance_formatted' => $distanceFormatted,
             'allowed_radius' => $allowedRadius,
+            'org_name' => $org->name,
+            'org_latitude' => (float) $org->latitude,
+            'org_longitude' => (float) $org->longitude,
             'message' => $isWithin
-                ? "Location verified successfully ({$distance}m from host premises)."
-                : "You are {$distance}m away from {$org->name}. Max allowed radius is {$allowedRadius}m.",
+                ? "Uthibitisho Umekamilika: Upo ndani ya eneo rasmi la kazi ({$distanceFormatted} kutoka ofisini. Upeo unaoruhusiwa: {$allowedRadius}m)."
+                : "Haupo ndani ya eneo la kazi! Upo umbali wa {$distanceFormatted} kutoka {$org->name}. Eneo linaloruhusiwa ni mita {$allowedRadius}. Mfumo unazuia udanganyifu.",
         ];
     }
 }

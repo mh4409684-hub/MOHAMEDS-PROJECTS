@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'CBE E-Logbook & Attendance System' }}</title>
     
     <!-- Favicon & PWA Icons -->
@@ -177,28 +178,172 @@
                     @endif
                 </nav>
 
-                <!-- User dropdown / Logout -->
-                <div class="flex items-center space-x-4">
+                <!-- User dropdown / Quick Access / Mobile Hamburger -->
+                <div class="flex items-center space-x-2 sm:space-x-3">
                     @if(auth()->check())
-                        <div class="flex items-center space-x-3">
-                            <div class="hidden sm:block text-right">
-                                <div class="text-sm font-semibold text-white">{{ auth()->user()->name }}</div>
-                                <div class="text-xs text-blue-300 capitalize">{{ auth()->user()->roles->first()?->name ?? 'User' }}</div>
-                            </div>
-                            <form method="POST" action="{{ route('cbe.logout') }}" class="inline">
-                                @csrf
-                                <button type="submit" class="p-2 rounded-lg bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white transition shadow-sm" title="Log Out">
-                                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                                </button>
-                            </form>
+                        <div class="hidden sm:block text-right">
+                            <div class="text-xs sm:text-sm font-semibold text-white">{{ auth()->user()->name }}</div>
+                            <div class="text-[10px] sm:text-xs text-blue-300 capitalize">{{ auth()->user()->roles->first()?->name ?? 'User' }}</div>
                         </div>
+
+                        <!-- 3-Dots Quick Navigation Menu (Simu & PC) -->
+                        <div class="relative">
+                            <button
+                                type="button"
+                                id="layout-quick-menu-btn"
+                                onclick="toggleLayoutQuickMenu()"
+                                class="p-2 sm:px-2.5 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 hover:text-amber-300 border border-slate-700 transition shadow-sm flex items-center gap-1.5"
+                                title="Alama Tatu - Kuingia Kirahisi"
+                                aria-label="Quick Access"
+                            >
+                                <i class="fa-solid fa-ellipsis-vertical text-base"></i>
+                                <span class="hidden lg:inline text-xs font-bold text-white">Njia za Haraka</span>
+                            </button>
+
+                            <!-- Dropdown -->
+                            <div
+                                id="layout-quick-dropdown"
+                                class="hidden absolute right-0 mt-2 w-64 bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-700/80 p-2 z-50 transform origin-top-right transition-all"
+                            >
+                                <div class="px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+                                    <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider flex items-center gap-1">
+                                        <i class="fa-solid fa-bolt"></i> Njia za Haraka
+                                    </span>
+                                    <span class="text-[9px] text-slate-400">Quick Menu</span>
+                                </div>
+                                <div class="p-1 space-y-1 text-xs">
+                                    @if(auth()->user()->hasRole('student'))
+                                        <a href="{{ route('student.dashboard') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-800 transition">
+                                            <i class="fa-solid fa-gauge text-blue-400 w-5"></i> Dashboard Overview
+                                        </a>
+                                        <a href="{{ route('student.field-attendance') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-emerald-600/20 text-emerald-300 transition">
+                                            <i class="fa-solid fa-location-dot text-emerald-400 w-5"></i> GPS Field Attendance
+                                        </a>
+                                        <a href="{{ route('student.elogbook.create') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-800 transition">
+                                            <i class="fa-solid fa-pen-to-square text-indigo-400 w-5"></i> Jaza Daily Logbook
+                                        </a>
+                                        <a href="{{ route('student.field-placement.apply') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-800 transition">
+                                            <i class="fa-solid fa-building-circle-check text-amber-400 w-5"></i> Badili Eneo la Field
+                                        </a>
+                                    @elseif(auth()->user()->hasRole(['super_admin', 'admin']))
+                                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-800 transition">
+                                            <i class="fa-solid fa-gauge text-blue-400 w-5"></i> Admin Dashboard
+                                        </a>
+                                        <a href="{{ route('admin.students.index') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-800 transition">
+                                            <i class="fa-solid fa-user-graduate text-emerald-400 w-5"></i> Wanafunzi (Students)
+                                        </a>
+                                        <a href="{{ route('admin.field-placements') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-800 transition">
+                                            <i class="fa-solid fa-briefcase text-amber-400 w-5"></i> Field Placements
+                                        </a>
+                                        @if(auth()->user()->email === 'mh4409684@gmail.com')
+                                            <a href="{{ route('admin.owner-control') }}" class="flex items-center gap-2.5 p-2 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/20 transition font-bold">
+                                                <i class="fa-solid fa-crown text-amber-400 w-5"></i> Owner Control Console
+                                            </a>
+                                        @endif
+                                    @elseif(auth()->user()->hasRole('field_supervisor'))
+                                        <a href="{{ route('supervisor.dashboard') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-800 transition">
+                                            <i class="fa-solid fa-gauge text-blue-400 w-5"></i> Supervisor Dashboard
+                                        </a>
+                                        <a href="{{ route('supervisor.students.index') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-800 transition">
+                                            <i class="fa-solid fa-users text-emerald-400 w-5"></i> My Students
+                                        </a>
+                                        <a href="{{ route('supervisor.logbooks.pending') }}" class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-800 transition">
+                                            <i class="fa-solid fa-clipboard-check text-indigo-400 w-5"></i> Pending Logbooks
+                                        </a>
+                                    @endif
+                                    <div class="border-t border-slate-800 my-1 pt-1">
+                                        <form method="POST" action="{{ route('cbe.logout') }}" class="block">
+                                            @csrf
+                                            <button type="submit" class="w-full text-left flex items-center gap-2.5 p-2 rounded-xl hover:bg-rose-600/20 text-rose-400 transition font-semibold">
+                                                <i class="fa-solid fa-arrow-right-from-bracket text-rose-500 w-5"></i> Ondoka (Log Out)
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Direct Logout Button -->
+                        <form method="POST" action="{{ route('cbe.logout') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="p-2 rounded-xl bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white transition shadow-sm" title="Log Out">
+                                <i class="fa-solid fa-arrow-right-from-bracket text-sm"></i>
+                            </button>
+                        </form>
                     @else
-                        <a href="{{ route('cbe.login') }}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow transition">
+                        <a href="{{ route('cbe.login') }}" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow transition">
                             Sign In
                         </a>
                     @endif
+
+                    <!-- Mobile Hamburger Button (Inaonekana kwenye Simu) -->
+                    <button
+                        type="button"
+                        id="mobile-nav-toggle-btn"
+                        onclick="toggleMobileNavDrawer()"
+                        class="md:hidden p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+                        aria-label="Toggle Mobile Navigation"
+                    >
+                        <i id="mobile-nav-icon" class="fa-solid fa-bars text-base"></i>
+                    </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Mobile Drawer Navigation (Inapunguza kubana kwenye simu) -->
+        <div id="mobile-nav-drawer" class="hidden md:hidden border-t border-slate-800 bg-slate-900/98 px-4 pt-3 pb-5 space-y-1.5 shadow-2xl">
+            @php $user = auth()->user(); @endphp
+            @if($user && $user->hasRole(['super_admin', 'admin']))
+                <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('admin.dashboard') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-gauge w-5 text-blue-400"></i> Dashboard
+                </a>
+                <a href="{{ route('admin.students.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('admin.students.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-user-graduate w-5 text-emerald-400"></i> Students
+                </a>
+                <a href="{{ route('admin.staff.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('admin.staff.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-chalkboard-user w-5 text-purple-400"></i> Staff
+                </a>
+                <a href="{{ route('admin.field-placements') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('admin.field-placements*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-briefcase w-5 text-amber-400"></i> Placements
+                </a>
+                <a href="{{ route('admin.reports') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('admin.reports*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-chart-pie w-5 text-cyan-400"></i> Reports
+                </a>
+                @if($user->email === 'mh4409684@gmail.com')
+                    <a href="{{ route('admin.owner-control') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                        <i class="fa-solid fa-crown w-5 text-amber-400"></i> Owner Console
+                    </a>
+                @endif
+            @elseif($user && $user->hasRole('student'))
+                <a href="{{ route('student.dashboard') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('student.dashboard') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-gauge w-5 text-blue-400"></i> Overview
+                </a>
+                <a href="{{ route('student.field-attendance') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('student.field-attendance*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-location-dot w-5 text-emerald-400"></i> GPS Attendance
+                </a>
+                <a href="{{ route('student.elogbook.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('student.elogbook.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-book-open w-5 text-indigo-400"></i> E-Logbook
+                </a>
+                <a href="{{ route('student.weekly-reports') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('student.weekly-reports*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-calendar-check w-5 text-sky-400"></i> Weekly Reports
+                </a>
+                <a href="{{ route('student.class-attendance') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('student.class-attendance*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-qrcode w-5 text-violet-400"></i> Class Attendance
+                </a>
+            @elseif($user && $user->hasRole('field_supervisor'))
+                <a href="{{ route('supervisor.dashboard') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('supervisor.dashboard') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-gauge w-5 text-blue-400"></i> Dashboard
+                </a>
+                <a href="{{ route('supervisor.students.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('supervisor.students.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-users w-5 text-emerald-400"></i> My Students
+                </a>
+                <a href="{{ route('supervisor.logbooks.pending') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('supervisor.logbooks.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-clipboard-check w-5 text-indigo-400"></i> Pending Logbooks
+                </a>
+                <a href="{{ route('supervisor.reports.pending') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium {{ request()->routeIs('supervisor.reports.*') ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800' }}">
+                    <i class="fa-solid fa-file-signature w-5 text-sky-400"></i> Reports
+                </a>
+            @endif
         </div>
     </header>
 
@@ -273,6 +418,39 @@
             System Designed & Developed with Proprietary Rights by <span class="font-bold text-blue-700">MOHAMEDY HAMADI MOHAMED</span> &bull; All Rights Reserved.
         </p>
     </footer>
+
+    <script>
+        function toggleLayoutQuickMenu() {
+            const menu = document.getElementById('layout-quick-dropdown');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function toggleMobileNavDrawer() {
+            const drawer = document.getElementById('mobile-nav-drawer');
+            const icon = document.getElementById('mobile-nav-icon');
+            if (drawer) {
+                drawer.classList.toggle('hidden');
+                if (drawer.classList.contains('hidden')) {
+                    icon.classList.remove('fa-xmark');
+                    icon.classList.add('fa-bars');
+                } else {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-xmark');
+                }
+            }
+        }
+
+        document.addEventListener('click', function(e) {
+            const quickBtn = document.getElementById('layout-quick-menu-btn');
+            const quickMenu = document.getElementById('layout-quick-dropdown');
+            if (quickBtn && quickMenu && !quickBtn.contains(e.target) && !quickMenu.contains(e.target)) {
+                quickMenu.classList.add('hidden');
+            }
+        });
+    </script>
+
+    <!-- MohamedTech Pro AI Assistant Widget -->
+    <x-ai-assistant-widget />
 
     @stack('scripts')
 </body>

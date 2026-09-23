@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>CBE E-Logbook System - Login</title>
     
     <!-- Favicon & PWA Icons -->
@@ -92,11 +93,78 @@
 
     <div class="w-full max-w-md">
         <!-- Card -->
-        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-800/40">
-            <!-- Header -->
-            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-8 text-white">
-                <h1 class="text-3xl font-bold mb-2">CBE System</h1>
-                <p class="text-blue-100">E-Logbook & Attendance Management</p>
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-800/40 relative">
+            <!-- Header with Three-Dots Quick Access Menu -->
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-7 text-white flex items-center justify-between relative">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight mb-1">CBE System</h1>
+                    <p class="text-blue-100 text-xs sm:text-sm">E-Logbook & Attendance Management</p>
+                </div>
+                <!-- 3-Dots Quick Access Button (Alama tatu kwa kuingia kirahisi) -->
+                <div class="relative">
+                    <button
+                        type="button"
+                        id="quick-access-menu-btn"
+                        onclick="toggleQuickAccessMenu()"
+                        class="w-10 h-10 rounded-2xl bg-white/15 hover:bg-white/25 active:scale-95 text-white flex items-center justify-center transition shadow-sm border border-white/20"
+                        title="Kuingia Kirahisi (Quick Access)"
+                        aria-label="Quick Access Menu"
+                    >
+                        <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div
+                        id="quick-access-dropdown"
+                        class="hidden absolute right-0 mt-2 w-64 bg-slate-900 text-white rounded-2xl shadow-2xl border border-slate-700/80 p-2 z-30 transform origin-top-right transition-all"
+                    >
+                        <div class="px-3 py-2 border-b border-slate-800 flex items-center justify-between">
+                            <span class="text-[10px] uppercase font-bold text-amber-400 tracking-wider flex items-center gap-1">
+                                <i class="fa-solid fa-bolt"></i> Kuingia Kirahisi
+                            </span>
+                            <span class="text-[9px] text-slate-400">1-Click Login</span>
+                        </div>
+                        <div class="p-1 space-y-1">
+                            <button
+                                type="button"
+                                onclick="fillAndSubmitLogin('mh4409684@gmail.com', 'mobili2004')"
+                                class="w-full text-left p-2.5 rounded-xl hover:bg-blue-600/30 border border-transparent hover:border-blue-500/40 transition flex items-center gap-3 group"
+                            >
+                                <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-sm font-bold shrink-0">
+                                    <i class="fa-solid fa-crown"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs font-bold text-white group-hover:text-amber-300 truncate">MOHAMEDY HAMADI</div>
+                                    <div class="text-[10px] text-slate-400 truncate">Portal Owner &bull; Admin</div>
+                                </div>
+                            </button>
+                            <a
+                                href="{{ route('cbe.register') }}"
+                                class="w-full text-left p-2.5 rounded-xl hover:bg-slate-800 border border-transparent hover:border-slate-700 transition flex items-center gap-3 group"
+                            >
+                                <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold shrink-0">
+                                    <i class="fa-solid fa-user-plus"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs font-bold text-white group-hover:text-emerald-300 truncate">Sajili Mwanafunzi Mpya</div>
+                                    <div class="text-[10px] text-slate-400 truncate">New Student Account</div>
+                                </div>
+                            </a>
+                            <a
+                                href="{{ route('cbe.forgot-password') }}"
+                                class="w-full text-left p-2.5 rounded-xl hover:bg-slate-800 border border-transparent hover:border-slate-700 transition flex items-center gap-3 group"
+                            >
+                                <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-sm font-bold shrink-0">
+                                    <i class="fa-solid fa-key"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-xs font-bold text-white group-hover:text-indigo-300 truncate">Umesahau Nenosiri?</div>
+                                    <div class="text-[10px] text-slate-400 truncate">Reset Password with OTP</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Form -->
@@ -163,14 +231,24 @@
                                 Forgot password?
                             </a>
                         </div>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Enter your password"
-                            required
-                        >
+                        <div class="relative">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="w-full px-4 py-2.5 pr-11 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                placeholder="Enter your password"
+                                required
+                            >
+                            <button
+                                type="button"
+                                onclick="togglePasswordVisibility('password', this)"
+                                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-blue-600 transition focus:outline-none"
+                                title="Show / Hide Password"
+                            >
+                                <i class="fa-regular fa-eye text-base"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Submit Button -->
@@ -246,14 +324,51 @@
                         <span class="text-xs font-bold text-blue-600">Fill &rarr;</span>
                     </button>
                 </div>
+                @endif
 
                 <script>
+                    function togglePasswordVisibility(inputId, btn) {
+                        const input = document.getElementById(inputId);
+                        const icon = btn.querySelector('i');
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            icon.classList.remove('fa-eye');
+                            icon.classList.add('fa-eye-slash');
+                            icon.classList.add('text-blue-600');
+                        } else {
+                            input.type = 'password';
+                            icon.classList.remove('fa-eye-slash');
+                            icon.classList.remove('text-blue-600');
+                            icon.classList.add('fa-eye');
+                        }
+                    }
+
+                    function toggleQuickAccessMenu() {
+                        const menu = document.getElementById('quick-access-dropdown');
+                        menu.classList.toggle('hidden');
+                    }
+
+                    document.addEventListener('click', function(event) {
+                        const btn = document.getElementById('quick-access-menu-btn');
+                        const menu = document.getElementById('quick-access-dropdown');
+                        if (btn && menu && !btn.contains(event.target) && !menu.contains(event.target)) {
+                            menu.classList.add('hidden');
+                        }
+                    });
+
                     function fillLogin(email, password) {
                         document.getElementById('email').value = email;
                         document.getElementById('password').value = password;
                     }
+
+                    function fillAndSubmitLogin(email, password) {
+                        fillLogin(email, password);
+                        const form = document.querySelector('form[action="{{ route('cbe.login.store') }}"]');
+                        if (form) {
+                            form.submit();
+                        }
+                    }
                 </script>
-                @endif
             </div>
         </div>
 
@@ -269,5 +384,8 @@
             </p>
         </div>
     </div>
+
+    <!-- MohamedTech Pro AI Assistant Widget -->
+    <x-ai-assistant-widget />
 </body>
 </html>

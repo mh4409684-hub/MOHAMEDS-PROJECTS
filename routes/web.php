@@ -27,6 +27,8 @@ Route::get('/api/health-check', function () {
     return response()->json(['status' => 'online', 'service' => 'CBE Portal', 'powered_by' => 'MOHAMEDYTECH PRO']);
 });
 
+Route::post('/api/ai/ask', [\App\Http\Controllers\AiAssistantController::class, 'ask'])->name('ai.ask');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         $user = auth()->user();

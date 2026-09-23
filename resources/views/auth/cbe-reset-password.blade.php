@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>CBE Portal - Enter New Password</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -82,28 +83,48 @@
                         <label for="password" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                             New Password
                         </label>
-                        <input
-                            type="password"
-                            id="password"
-                            name="password"
-                            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            placeholder="At least 6 characters"
-                            required
-                        >
+                        <div class="relative">
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="w-full px-4 py-2.5 pr-11 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                placeholder="At least 6 characters"
+                                required
+                            >
+                            <button
+                                type="button"
+                                onclick="toggleResetPassword('password', this)"
+                                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-blue-600 transition focus:outline-none"
+                                title="Show / Hide Password"
+                            >
+                                <i class="fa-regular fa-eye text-sm"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div>
                         <label for="password_confirmation" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                             Confirm New Password
                         </label>
-                        <input
-                            type="password"
-                            id="password_confirmation"
-                            name="password_confirmation"
-                            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            placeholder="Repeat new password"
-                            required
-                        >
+                        <div class="relative">
+                            <input
+                                type="password"
+                                id="password_confirmation"
+                                name="password_confirmation"
+                                class="w-full px-4 py-2.5 pr-11 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                placeholder="Repeat new password"
+                                required
+                            >
+                            <button
+                                type="button"
+                                onclick="toggleResetPassword('password_confirmation', this)"
+                                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-blue-600 transition focus:outline-none"
+                                title="Show / Hide Password"
+                            >
+                                <i class="fa-regular fa-eye text-sm"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <button
@@ -122,5 +143,26 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleResetPassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                icon.classList.add('text-blue-600');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.remove('text-blue-600');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
+
+    <!-- MohamedTech Pro AI Assistant Widget -->
+    <x-ai-assistant-widget />
 </body>
 </html>

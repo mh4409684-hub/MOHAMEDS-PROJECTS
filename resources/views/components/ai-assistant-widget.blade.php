@@ -1,5 +1,24 @@
 <!-- MohamedTech Pro AI Support & Guidance Assistant Widget -->
-<div id="mohamedtech-ai-container" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 font-sans">
+<style>
+    #ai-chat-window:not(.hidden) {
+        display: flex !important;
+    }
+    #ai-chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    #ai-chat-messages::-webkit-scrollbar-track {
+        background: rgba(15, 23, 42, 0.6);
+    }
+    #ai-chat-messages::-webkit-scrollbar-thumb {
+        background: rgba(99, 102, 241, 0.4);
+        border-radius: 9999px;
+    }
+    #ai-chat-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(99, 102, 241, 0.7);
+    }
+</style>
+
+<div id="mohamedtech-ai-container" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[9999] font-sans">
     <!-- Floating Launcher Button -->
     <div class="relative flex items-center justify-end">
         <!-- Notification tooltip (shows once or on hover) -->
@@ -36,10 +55,10 @@
     <!-- AI Chat Window -->
     <div
         id="ai-chat-window"
-        class="hidden fixed inset-x-3 bottom-20 sm:inset-auto sm:right-6 sm:bottom-24 sm:w-[410px] sm:max-w-[calc(100vw-3rem)] h-[540px] max-h-[82vh] bg-slate-900/98 backdrop-blur-xl border border-slate-700/80 rounded-3xl shadow-2xl flex-col overflow-hidden transition-all duration-300 transform scale-95 opacity-0 z-50 text-slate-100"
+        class="hidden fixed inset-x-2 bottom-20 sm:inset-auto sm:right-6 sm:bottom-24 sm:w-[420px] sm:max-w-[calc(100vw-2rem)] h-[510px] max-h-[78vh] sm:max-h-[82vh] bg-slate-900/98 backdrop-blur-xl border border-slate-700/80 rounded-3xl shadow-2xl flex flex-col overflow-hidden transition-all duration-300 transform scale-95 opacity-0 z-[10000] text-slate-100"
     >
         <!-- Header -->
-        <div class="px-5 py-3.5 bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 border-b border-indigo-500/30 flex items-center justify-between shadow-md">
+        <div class="px-5 py-3.5 bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-700 border-b border-indigo-500/30 flex items-center justify-between shadow-md shrink-0">
             <div class="flex items-center gap-3">
                 <div class="relative">
                     <div class="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 text-white shadow-inner">
@@ -78,7 +97,7 @@
         </div>
 
         <!-- Chat History Area -->
-        <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 scroll-smooth text-xs sm:text-[13px] bg-gradient-to-b from-slate-900/60 to-slate-950/80">
+        <div id="ai-chat-messages" class="flex-1 min-h-0 p-4 overflow-y-auto space-y-3 text-xs sm:text-[13px] bg-gradient-to-b from-slate-900/60 to-slate-950/80">
             <!-- Welcome message -->
             <div class="flex items-start gap-2.5">
                 <div class="w-7 h-7 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 flex items-center justify-center shrink-0 mt-0.5">
@@ -89,14 +108,14 @@
                         <span>👋 Habari! Karibu CBE Portal</span>
                     </p>
                     <p class="text-slate-300 text-xs leading-relaxed">
-                        Mimi ni msaidizi wako wa akili bandia (AI). Unaweza kuniuliza chochote kuhusu usajili, nenosiri, GPS attendance, e-logbook, au kupata mawasiliano ya haraka ya <strong class="text-amber-400">Eng. Mohamedy Hamadi</strong>.
+                        Mimi ni msaidizi wako wa akili bandia (AI). Unaweza kuniuliza chochote kuhusu usajili, nenosiri, barua pepe/OTP, GPS attendance, e-logbook, au kupata mawasiliano ya haraka ya <strong class="text-amber-400">Eng. Mohamedy Hamadi</strong>.
                     </p>
                 </div>
             </div>
 
             <!-- Quick Action Chips -->
             <div class="pl-9 pr-2 pt-1 pb-1">
-                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-2">Chagua Msaada wa Haraka:</span>
+                <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-2">Msaada wa Haraka (Bonyeza Hapa):</span>
                 <div class="flex flex-wrap gap-1.5">
                     <button
                         type="button"
@@ -116,11 +135,19 @@
                     </button>
                     <button
                         type="button"
-                        onclick="sendQuickAiQuery('Nimesahau Password yangu')"
+                        onclick="sendQuickAiQuery('Nimesahau Password na OTP')"
                         class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500/50 text-[11px] text-slate-200 hover:text-white transition flex items-center gap-1.5 active:scale-95"
                     >
                         <i class="fa-solid fa-key text-amber-400 text-[10px]"></i>
                         <span>🔐 Umesahau Password?</span>
+                    </button>
+                    <button
+                        type="button"
+                        onclick="sendQuickAiQuery('Kuhusu Barua Pepe na Email ya OTP')"
+                        class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-indigo-600/30 border border-slate-700 hover:border-indigo-500/50 text-[11px] text-slate-200 hover:text-white transition flex items-center gap-1.5 active:scale-95"
+                    >
+                        <i class="fa-solid fa-envelope text-cyan-400 text-[10px]"></i>
+                        <span>📧 Barua Pepe / Email</span>
                     </button>
                     <button
                         type="button"
@@ -165,13 +192,13 @@
         </div>
 
         <!-- Typing Indicator (Hidden by default) -->
-        <div id="ai-typing-indicator" class="hidden px-5 py-2 text-xs text-indigo-300 items-center gap-2 bg-slate-900/90 border-t border-slate-800">
+        <div id="ai-typing-indicator" class="hidden px-5 py-2 text-xs text-indigo-300 items-center gap-2 bg-slate-900/95 border-t border-slate-800 shrink-0">
             <i class="fa-solid fa-circle-notch fa-spin text-indigo-400"></i>
-            <span>AI inafikiria jibu sahihi...</span>
+            <span>MohamedTech AI inajibu...</span>
         </div>
 
         <!-- Input Area -->
-        <div class="p-3 bg-slate-950 border-t border-slate-800">
+        <div class="p-3 bg-slate-950 border-t border-slate-800 shrink-0">
             <form id="ai-chat-form" onsubmit="handleAiFormSubmit(event)" class="flex items-center gap-2">
                 <input
                     type="text"
@@ -222,7 +249,7 @@
                 const input = document.getElementById('ai-user-input');
                 if (input && window.innerWidth > 640) input.focus();
                 scrollAiChatToBottom();
-            }, 100);
+            }, 120);
         } else {
             win.classList.remove('scale-100', 'opacity-100');
             win.classList.add('scale-95', 'opacity-0');
@@ -236,9 +263,13 @@
 
     function scrollAiChatToBottom() {
         const msgs = document.getElementById('ai-chat-messages');
-        if (msgs) {
+        if (!msgs) return;
+        requestAnimationFrame(() => {
             msgs.scrollTop = msgs.scrollHeight;
-        }
+        });
+        setTimeout(() => {
+            msgs.scrollTop = msgs.scrollHeight;
+        }, 100);
     }
 
     function sendQuickAiQuery(text) {
@@ -276,9 +307,13 @@
         `;
         msgs.appendChild(userBubble);
         scrollAiChatToBottom();
+        userBubble.scrollIntoView({ behavior: 'smooth', block: 'end' });
 
         // Show typing indicator
-        if (indicator) indicator.classList.remove('hidden');
+        if (indicator) {
+            indicator.classList.remove('hidden');
+            indicator.classList.add('flex');
+        }
         if (sendBtn) sendBtn.disabled = true;
 
         try {
@@ -310,6 +345,9 @@
             `;
             msgs.appendChild(aiBubble);
             scrollAiChatToBottom();
+            setTimeout(() => {
+                aiBubble.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }, 50);
         } catch (err) {
             console.error('AI Request error:', err);
             const errBubble = document.createElement('div');
@@ -324,8 +362,12 @@
             `;
             msgs.appendChild(errBubble);
             scrollAiChatToBottom();
+            errBubble.scrollIntoView({ behavior: 'smooth', block: 'end' });
         } finally {
-            if (indicator) indicator.classList.add('hidden');
+            if (indicator) {
+                indicator.classList.remove('flex');
+                indicator.classList.add('hidden');
+            }
             if (sendBtn) sendBtn.disabled = false;
         }
     }

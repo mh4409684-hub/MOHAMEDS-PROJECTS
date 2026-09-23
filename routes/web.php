@@ -29,6 +29,34 @@ Route::get('/api/health-check', function () {
 
 Route::post('/api/ai/ask', [\App\Http\Controllers\AiAssistantController::class, 'ask'])->name('ai.ask');
 
+Route::get('/api/test-email', function (\Illuminate\Http\Request $request) {
+    $to = $request->query('to', 'mh4409684@gmail.com');
+    try {
+        \Illuminate\Support\Facades\Mail::raw("Hii ni barua pepe ya majaribio kutoka CBE Server: " . now()->toDateTimeString(), function ($msg) use ($to) {
+            $msg->to($to)->subject('CBE Server Email Test - ' . now()->format('H:i:s'));
+        });
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Email sent successfully via Laravel Mailer to ' . $to,
+            'mailer' => config('mail.default'),
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'username' => config('mail.mailers.smtp.username'),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'error' => $e->getMessage(),
+            'class' => get_class($e),
+            'trace' => $e->getFile() . ':' . $e->getLine(),
+            'mailer' => config('mail.default'),
+            'host' => config('mail.mailers.smtp.host'),
+            'port' => config('mail.mailers.smtp.port'),
+            'username' => config('mail.mailers.smtp.username'),
+        ], 500);
+    }
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         $user = auth()->user();

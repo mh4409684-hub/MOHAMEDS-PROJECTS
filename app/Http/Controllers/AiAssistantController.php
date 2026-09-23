@@ -52,12 +52,31 @@ class AiAssistantController extends Controller
         }
 
         // 3. Password / Kusahau nenosiri
-        if (str_contains($q, 'password') || str_contains($q, 'nenosiri') || str_contains($q, 'sahau') || str_contains($q, 'forgot') || str_contains($q, 'otp')) {
+        if (str_contains($q, 'password') || str_contains($q, 'nenosiri') || str_contains($q, 'sahau') || str_contains($q, 'forgot') || str_contains($q, 'reset')) {
             return "🔐 *Umesahau Nenosiri? (Reset Password):*\n\n"
                  . "1. Nenda kwenye ukurasa wa Login kisha bonyeza 'Forgot password?' au tembelea `/cbe/forgot-password`.\n"
-                 . "2. Ingiza barua pepe yako uliyojisajili nayo.\n"
-                 . "3. Mfumo utakutumia OTP ya tarakimu 6 kwenye Email na WhatsApp yako.\n"
-                 . "4. Jaza OTP hiyo pamoja na nenosiri lako jipya kisha bonyeza 'Save & Reset Password'.";
+                 . "2. Ingiza Username na Barua Pepe yako uliyojisajili nayo.\n"
+                 . "3. Mfumo utakutumia OTP ya tarakimu 6 kwenye Barua Pepe yako.\n"
+                 . "4. Jaza OTP hiyo pamoja na nenosiri lako jipya kisha bonyeza 'Save & Reset Password'.\n\n"
+                 . "💡 *Kama huoni email ya OTP:* Hakikisha unakagua pia folda ya **Spam / Junk** kwenye email yako, au wasiliana nasi WhatsApp *+255 777 568 288*.";
+        }
+
+        // 3b. Email / Ujumbe / OTP Kutofika
+        if (str_contains($q, 'email') || str_contains($q, 'barua pepe') || str_contains($q, 'otp') || str_contains($q, 'ujumbe') || str_contains($q, 'mail')) {
+            return "📧 *Kuhusu Kupokea Barua Pepe (Email & OTP):*\n\n"
+                 . "Mfumo hutuma barua pepe za uthibitisho na OTP moja kwa moja kwenye barua pepe yako:\n"
+                 . "1. **Kagua Inbox na Spam:** Mara nyingine barua pepe huenda kwenye folda ya **Spam** au **Junk** ya Gmail/Yahoo/Outlook yako.\n"
+                 . "2. **Anwani Sahihi:** Hakikisha barua pepe uliyoandika haina herufi iliyokosewa.\n"
+                 . "3. **Msaada wa Papo Hapo:** Ikiwa bado hujaipokea, wasiliana na Eng. Mohamedy Hamadi moja kwa moja WhatsApp: *+255 777 568 288* ili akufanyie reset au akusaidie papo hapo!";
+        }
+
+        // 3c. Tatizo / Shida / Help
+        if (str_contains($q, 'shida') || str_contains($q, 'tatizo') || str_contains($q, 'kero') || str_contains($q, 'haifanyi') || str_contains($q, 'tatizo') || str_contains($q, 'help') || str_contains($q, 'msaada')) {
+            return "🛠️ *Utatuzi wa Matatizo na Shida za Kawaida:*\n\n"
+                 . "• **Kushindwa Kuingia (Login Failed):** Hakikisha unatumia Username au Reg Number sahihi na Password yako.\n"
+                 . "• **Akaunti Inasubiri Idhini:** Ukishajisajili, akaunti yako inahitaji kuhakikiwa na Admin kabla ya kuingia.\n"
+                 . "• **GPS ya Mahudhurio:** Hakikisha umewasha Location kwenye simu yako na umeruhusu browser kuona eneo lako (Allow).\n"
+                 . "• **Wasiliana Nasi Moja kwa Moja:** Bofya kitufe cha WhatsApp chini au piga *+255 777 568 288* kupata msaada wa haraka!";
         }
 
         // 4. Field Placement / Eneo la Field

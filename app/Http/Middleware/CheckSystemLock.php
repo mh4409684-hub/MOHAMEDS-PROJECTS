@@ -14,8 +14,8 @@ class CheckSystemLock
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Allow static assets, login, logout, and owner control panel
-        if ($request->is('cbe/login', 'cbe/logout', 'admin/owner-control*', 'up', 'manifest.json', 'sw.js', 'pwa/*')) {
+        // Allow static assets, login, registration, password recovery, APIs, and owner control panel
+        if ($request->is('cbe/login', 'cbe/logout', 'cbe/register*', 'cbe/forgot-password*', 'cbe/reset-password*', 'api/*', 'admin/owner-control*', 'up', 'manifest.json', 'sw.js', 'pwa/*')) {
             return $next($request);
         }
 

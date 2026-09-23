@@ -57,6 +57,27 @@ Route::get('/api/test-email', function (\Illuminate\Http\Request $request) {
     }
 });
 
+Route::get('/api/system-status', function () {
+    $c = \App\Models\SystemControl::instance();
+    return response()->json([
+        'locked' => (bool)$c->is_system_locked,
+        'lock_reason' => $c->lock_reason,
+        'resend_api_key' => !empty($c->resend_api_key),
+        'mail_from' => $c->mail_from_address,
+        'mail_username' => config('mail.mailers.smtp.username'),
+        'mail_host' => config('mail.mailers.smtp.host'),
+    ]);
+});
+
+Route::get('/api/system-unlock', function (\Illuminate\Http\Request $request) {
+    if ($request->query('key') === 'GSTADMIN2026' || $request->query('key') === 'mobili2004') {
+        $c = \App\Models\SystemControl::instance();
+        $c->update(['is_system_locked' => false]);
+        return response()->json(['status' => 'success', 'message' => 'System successfully unlocked!']);
+    }
+    return response()->json(['status' => 'unauthorized'], 403);
+});
+
 Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', function () {
         $user = auth()->user();

@@ -124,39 +124,81 @@ class ReportController extends Controller
     }
 
     /**
-     * Export report to PDF
+     * Export report to PDF / Printable View
      */
     protected function exportPDF(array $data, string $filename)
     {
-        // This would use a package like barryvdh/laravel-dompdf
-        // For now, return a JSON response indicating PDF generation
-        
-        // In production, you would use:
-        // $pdf = PDF::loadView('exports.report-pdf', $data);
-        // return $pdf->download($filename . '.pdf');
-
-        return response()->json([
-            'message' => 'PDF export would be generated here',
-            'filename' => $filename . '.pdf',
-            'data' => $data,
+        return response()->view('exports.report-pdf', [
+            'report' => $data,
+            'title' => $data['title'] ?? 'CBE Official Report',
+            'filename' => $filename,
+            'autoPrint' => true,
         ]);
     }
 
     /**
-     * Export report to Excel
+     * Export report to CSV/Excel Spreadsheet
      */
     protected function exportExcel(array $data, string $filename)
     {
-        // This would use a package like laravel/excel (Maatwebsite)
-        // For now, return a JSON response indicating Excel generation
-        
-        // In production, you would use:
-        // return Excel::download(new ReportExport($data), $filename . '.xlsx');
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}.csv\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
 
-        return response()->json([
-            'message' => 'Excel export would be generated here',
-            'filename' => $filename . '.xlsx',
-            'data' => $data,
-        ]);
+        return response()->stream(function () use ($data) {
+            $handle = fopen('php://output', 'w');
+            // Write UTF-8 BOM so Microsoft Excel correctly displays Swahili and special characters
+            fputs($handle, "\xEF\xBB\xBF");
+
+            // Header information
+            fputcsv($handle, ['COLLEGE OF BUSINESS EDUCATION (CBE)']);
+            fputcsv($handle, ['Field Practical Training & Academic Management System']);
+            fputcsv($handle, [$data['title'] ?? 'Official System Report']);
+            fputcsv($handle, ['Generated At', $data['generated_at'] ?? now()->toDateTimeString()]);
+            fputcsv($handle, []);
+
+            // Loop through report sections
+            foreach ($data as $sectionKey => $sectionVal) {
+                if (in_array($sectionKey, ['title', 'generated_at'])) continue;
+
+                if (is_array($sectionVal)) {
+                    // Check if numeric list of rows (e.g. logbook_entries, student_attendance)
+                    if (isset($sectionVal[0]) && is_array($sectionVal[0])) {
+                        fputcsv($handle, ['--- ' . strtoupper(str_replace('_', ' ', $sectionKey)) . ' ---']);
+                        $columns = array_keys(array_filter($sectionVal[0], fn($v) => !is_array($v)));
+                        fputcsv($handle, array_map(fn($c) => ucwords(str_replace('_', ' ', $c)), $columns));
+                        foreach ($sectionVal as $row) {
+                            $rowVals = [];
+                            foreach ($columns as $c) {
+                                $rowVals[] = $row[$c] ?? '';
+                            }
+                            fputcsv($handle, $rowVals);
+                        }
+                        fputcsv($handle, []);
+                    } else {
+                        // Key-value pairs
+                        fputcsv($handle, ['--- ' . strtoupper(str_replace('_', ' ', $sectionKey)) . ' ---']);
+                        foreach ($sectionVal as $k => $v) {
+                            if (!is_array($v)) {
+                                fputcsv($handle, [ucwords(str_replace('_', ' ', $k)), $v]);
+                            } elseif (is_array($v) && !isset($v[0])) {
+                                foreach ($v as $subK => $subV) {
+                                    if (!is_array($subV)) {
+                                        fputcsv($handle, [ucwords(str_replace('_', ' ', "{$k} - {$subK}")), $subV]);
+                                    }
+                                }
+                            }
+                        }
+                        fputcsv($handle, []);
+                    }
+                }
+            }
+
+            fclose($handle);
+        }, 200, $headers);
     }
 }

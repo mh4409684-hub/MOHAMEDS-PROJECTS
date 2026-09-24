@@ -8,9 +8,14 @@
                 <h1 class="text-2xl font-black text-slate-900">{{ $report['title'] ?? 'Field Placement Report' }}</h1>
                 <p class="text-xs text-slate-500 mt-0.5">Imezalishwa: {{ $report['generated_at'] ?? now() }}</p>
             </div>
-            <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow transition flex items-center gap-2">
-                <i class="fa-solid fa-print"></i> Chapisha / Print PDF
-            </button>
+            <div class="flex items-center gap-2">
+                <a href="{{ request()->fullUrlWithQuery(['format' => 'excel']) }}" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Pakua Excel (CSV)
+                </a>
+                <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow transition flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Chapisha / Print PDF
+                </button>
+            </div>
         </div>
 
         <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-sm space-y-6 print:border-none print:shadow-none print:p-0">

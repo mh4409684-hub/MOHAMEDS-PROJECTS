@@ -107,8 +107,10 @@ class CBELoginController extends Controller
                 'enrollment_date' => now(),
                 'notes' => 'Self-registered student awaiting administrator verification and approval.',
             ]);
+        });
 
-            // 1. Send Automatic Welcome/Registration Email to Student
+        // Dispatch background welcome notifications asynchronously after response
+        app()->terminating(function () use ($user) {
             try {
                 $html = view('emails.security-code', [
                     'user' => $user,
@@ -125,7 +127,6 @@ class CBELoginController extends Controller
                 \Log::warning('Could not send registration confirmation email: ' . $e->getMessage());
             }
 
-            // 2. Dispatch WhatsApp Notification if phone provided
             if (!empty($user->phone)) {
                 try {
                     $regMsg = "🎓 *COLLEGE OF BUSINESS EDUCATION (CBE)*\n"

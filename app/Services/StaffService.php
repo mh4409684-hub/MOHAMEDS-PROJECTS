@@ -38,36 +38,36 @@ class StaffService
 
         $this->assignRoleByStaffType($user, $data['staff_type']);
 
-        // 1. Send Welcome Email via HttpMailService (Resend HTTPS API / Mail fallback)
-        try {
-            $welcomeMail = new \App\Mail\StaffWelcomeMail($user, $data['password'], $data['staff_type']);
-            $html = view('emails.staff-welcome', [
-                'user' => $user,
-                'temporaryPassword' => $data['password'],
-                'staffType' => $data['staff_type'],
-                'loginUrl' => url('/cbe/login'),
-            ])->render();
-
-            $subject = "CBE Portal - Taarifa ya Kufunguliwa Akaunti: " . ($data['staff_type'] === 'field_supervisor' || $data['staff_type'] === 'supervisor' ? 'Field Supervisor' : 'Staff');
-            \App\Services\HttpMailService::send($user->email, $subject, $html);
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning('Could not send staff welcome email: ' . $e->getMessage());
-        }
-
-        // 2. Dispatch via WhatsApp if phone number exists
-        if (!empty($user->phone)) {
+        // Dispatch Welcome Email and WhatsApp via background terminating callback
+        app()->terminating(function () use ($user, $data) {
             try {
-                \App\Services\WhatsAppService::sendSupervisorWelcome(
-                    $user->phone,
-                    $user->name,
-                    $user->email,
-                    $data['password'],
-                    ucwords(str_replace('_', ' ', $data['staff_type']))
-                );
+                $html = view('emails.staff-welcome', [
+                    'user' => $user,
+                    'temporaryPassword' => $data['password'],
+                    'staffType' => $data['staff_type'],
+                    'loginUrl' => url('/cbe/login'),
+                ])->render();
+
+                $subject = "CBE Portal - Taarifa ya Kufunguliwa Akaunti: " . ($data['staff_type'] === 'field_supervisor' || $data['staff_type'] === 'supervisor' ? 'Field Supervisor' : 'Staff');
+                \App\Services\HttpMailService::send($user->email, $subject, $html);
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('WhatsApp staff welcome dispatch error: ' . $e->getMessage());
+                \Illuminate\Support\Facades\Log::warning('Could not send staff welcome email: ' . $e->getMessage());
             }
-        }
+
+            if (!empty($user->phone)) {
+                try {
+                    \App\Services\WhatsAppService::sendSupervisorWelcome(
+                        $user->phone,
+                        $user->name,
+                        $user->email,
+                        $data['password'],
+                        ucwords(str_replace('_', ' ', $data['staff_type']))
+                    );
+                } catch (\Throwable $e) {
+                    \Illuminate\Support\Facades\Log::warning('WhatsApp staff welcome dispatch error: ' . $e->getMessage());
+                }
+            }
+        });
 
         return $staff->load('user', 'campus', 'department');
     }

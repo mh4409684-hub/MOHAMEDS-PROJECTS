@@ -148,45 +148,59 @@ class AdminDashboardController extends Controller
             'notes' => 'Self-registration approved by CBE Administrator on ' . now()->toFormattedDateString(),
         ]);
 
-        // Send confirmation email to student
+        // Create internal database notification for the student
         try {
-            $schemeAndHost = request()->getSchemeAndHttpHost();
-            if (str_contains($schemeAndHost, 'onrender.com')) {
-                $loginUrl = 'https://mohamedy-project.onrender.com/cbe/login';
-            } elseif (str_contains($schemeAndHost, 'localhost') || str_contains($schemeAndHost, '127.0.0.1')) {
-                $loginUrl = 'https://delight-organization-night-amsterdam.trycloudflare.com/cbe/login';
-            } else {
-                $loginUrl = rtrim($schemeAndHost, '/') . '/cbe/login';
-            }
-
-            // Dispatch approval email via HttpMailService (uses HTTPS Resend API on Render or standard mail)
-            $subject = 'CBE Portal - Taarifa ya Kukubaliwa Usajili Wako wa Mfumo';
-            $html = view('emails.security-code', [
-                'user' => $user,
-                'actionType' => 'approval',
-                'actionUrl' => $loginUrl,
-                'code' => '',
-            ])->render();
-            \App\Services\HttpMailService::send($user->email, $subject, $html);
-
-            // Also notify student via WhatsApp if phone number is provided
-            if (!empty($user->phone)) {
-                $approvalMsg = "🎓 *COLLEGE OF BUSINESS EDUCATION (CBE)*\n"
-                             . "Habari *{$user->name}*,\n\n"
-                             . "🎉 *Hongera!* Ombi lako la kujiunga na CBE Field Portal limekubaliwa rasmi na Mkuu wa Mfumo.\n\n"
-                             . "Akaunti yako sasa iko hai (Activated). Unaweza kuingia kupitia kiunganishi hiki:\n"
-                             . "🔗 " . url('/cbe/login') . "\n\n"
-                             . "Karibu kwenye mfumo!";
-                \App\Services\WhatsAppService::sendMessage($user->phone, $approvalMsg);
-            }
+            \App\Models\Notification::create([
+                'user_id' => $user->id,
+                'type' => 'student_approved',
+                'title' => 'Usajili Umeidhinishwa Rasmi',
+                'message' => 'Hongera! Usajili wako wa CBE Field Portal umeidhinishwa na Mkuu wa Mfumo. Akaunti yako sasa iko hai.',
+                'is_read' => false,
+            ]);
         } catch (\Throwable $e) {
-            \Log::error('Could not send student approval notification: ' . $e->getMessage());
+            \Log::warning('Could not create student notification: ' . $e->getMessage());
+        }
+
+        $schemeAndHost = request()->getSchemeAndHttpHost();
+        if (str_contains($schemeAndHost, 'onrender.com')) {
+            $loginUrl = 'https://mohamedy-project.onrender.com/cbe/login';
+        } elseif (str_contains($schemeAndHost, 'localhost') || str_contains($schemeAndHost, '127.0.0.1')) {
+            $loginUrl = 'https://delight-organization-night-amsterdam.trycloudflare.com/cbe/login';
+        } else {
+            $loginUrl = rtrim($schemeAndHost, '/') . '/cbe/login';
         }
 
         $phone = preg_replace('/[^0-9]/', '', $user->phone ?? '');
         if (str_starts_with($phone, '0')) {
             $phone = '255' . substr($phone, 1);
         }
+
+        // Dispatch external email and WhatsApp notifications asynchronously after response
+        // Using app()->terminating ensures the admin browser response is returned INSTANTLY (0s delay)
+        app()->terminating(function () use ($user, $loginUrl) {
+            try {
+                $subject = 'CBE Portal - Taarifa ya Kukubaliwa Usajili Wako wa Mfumo';
+                $html = view('emails.security-code', [
+                    'user' => $user,
+                    'actionType' => 'approval',
+                    'actionUrl' => $loginUrl,
+                    'code' => '',
+                ])->render();
+                \App\Services\HttpMailService::send($user->email, $subject, $html);
+
+                if (!empty($user->phone)) {
+                    $approvalMsg = "🎓 *COLLEGE OF BUSINESS EDUCATION (CBE)*\n"
+                                 . "Habari *{$user->name}*,\n\n"
+                                 . "🎉 *Hongera!* Ombi lako la kujiunga na CBE Field Portal limekubaliwa rasmi na Mkuu wa Mfumo.\n\n"
+                                 . "Akaunti yako sasa iko hai (Activated). Unaweza kuingia kupitia kiunganishi hiki:\n"
+                                 . "🔗 {$loginUrl}\n\n"
+                                 . "Karibu kwenye mfumo!";
+                    \App\Services\WhatsAppService::sendMessage($user->phone, $approvalMsg);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('Could not send student approval notification: ' . $e->getMessage());
+            }
+        });
 
         return back()
             ->with('success', "Usajili wa mwanafunzi {$user->name} ({$user->registration_number}) umekubaliwa kikamilifu!")

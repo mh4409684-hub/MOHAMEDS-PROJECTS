@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mohamedy-safaris-ride.onrender.com/sitemap.xml

@@ -65,7 +65,7 @@ public class MainActivity extends Activity {
         });
 
         // Load live backend server url
-        webView.loadUrl("https://unavailable-jpg-complex-fired.trycloudflare.com/rider.html");
+        webView.loadUrl("https://mohamedy-safaris-ride.onrender.com/rider.html");
     }
 
     @Override

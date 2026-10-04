@@ -65,7 +65,7 @@ public class MainActivity extends Activity {
         });
 
         // Load live backend server url
-        webView.loadUrl("http://192.168.1.122:8081/driver.html");
+        webView.loadUrl("https://unavailable-jpg-complex-fired.trycloudflare.com/driver.html");
     }
 
     @Override

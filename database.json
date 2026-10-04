@@ -1,0 +1,122 @@
+{
+  "config": {
+    "appName": "SAFARIS",
+    "rates": {
+      "boda": 500,
+      "bajaj": 750,
+      "gari": 1100
+    },
+    "commissionPercent": 15
+  },
+  "drivers": [
+    {
+      "id": "DRV-101",
+      "name": "Hamisi Mwamba",
+      "phone": "0754112233",
+      "vehicle": "bajaj",
+      "vehicleModel": "TVS King",
+      "plate": "T 482 DXB",
+      "rating": 4.9,
+      "tripsCount": 1420,
+      "status": "approved",
+      "isOnline": true,
+      "lat": -6.8228,
+      "lng": 39.2785,
+      "walletBalance": 124000
+    },
+    {
+      "id": "DRV-102",
+      "name": "Baraka John",
+      "phone": "0714998877",
+      "vehicle": "gari",
+      "vehicleModel": "Toyota IST",
+      "plate": "T 192 CSP",
+      "rating": 4.8,
+      "tripsCount": 890,
+      "status": "approved",
+      "isOnline": true,
+      "lat": -6.8162,
+      "lng": 39.2908,
+      "walletBalance": 86000
+    },
+    {
+      "id": "DRV-2796",
+      "name": "Juma Rashid",
+      "phone": "0712345678",
+      "vehicle": "bajaj",
+      "vehicleModel": "TVS King 200",
+      "plate": "T 888 CCC",
+      "rating": 5.0,
+      "tripsCount": 1,
+      "status": "approved",
+      "isOnline": true,
+      "lat": -6.8228,
+      "lng": 39.2785,
+      "walletBalance": 13825
+    }
+  ],
+  "activeRides": {
+    "RIDE-798143": {
+      "rideId": "RIDE-798143",
+      "riderName": "Amina Salum",
+      "pickup": "Kariakoo Msimbazi",
+      "dropoff": "Posta Mpya",
+      "pickupCoords": [
+        -6.8228,
+        39.2785
+      ],
+      "dropCoords": [
+        -6.8162,
+        39.2908
+      ],
+      "distanceKm": 3.5,
+      "tier": "bajaj",
+      "fare": 4500,
+      "status": "completed",
+      "driver": {
+        "id": "DRV-2796",
+        "name": "Juma Rashid",
+        "phone": "0712345678",
+        "plate": "T 888 CCC",
+        "vehicleModel": "TVS King 200",
+        "rating": 5.0,
+        "lat": -6.8228,
+        "lng": 39.2785
+      },
+      "createdAt": 1791152798.1430705
+    }
+  },
+  "feedbacks": [
+    {
+      "id": 8383,
+      "riderName": "Amina Salum",
+      "driverName": "Juma Rashid (TVS King 200)",
+      "route": "Kariakoo → Posta",
+      "rating": 5,
+      "review": "Dereva mzuri sana, alifika kwa wakati na safari ilikuwa safi!",
+      "date": "Sasa hivi"
+    },
+    {
+      "id": 1,
+      "riderName": "Halima Bakari",
+      "driverName": "Hamisi Mwamba (Bajaj)",
+      "route": "Kariakoo → Posta",
+      "rating": 5,
+      "review": "Dereva mzuri sana, alifika kwa wakati na bajaj yake ni safi kabisa!",
+      "date": "Leo, 13:45"
+    },
+    {
+      "id": 2,
+      "riderName": "Peter Mwamba",
+      "driverName": "Baraka John (Gari)",
+      "route": "Mwenge → Sinza",
+      "rating": 5,
+      "review": "AC ilikuwa inafanya kazi vizuri na alitumia njia isiyo na foleni.",
+      "date": "Leo, 11:20"
+    }
+  ],
+  "financials": {
+    "totalGrossFares": 1844500,
+    "totalCommission": 276675
+  }
+}

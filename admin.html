@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="sw" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MohamedTech Control - Jopo la Mmiliki Peke Yake</title>
+  <link rel="icon" type="image/png" href="./public/logo.png">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              green: '#00D664',
+              dark: '#070D19',
+              card: '#0F172A',
+              amber: '#FFB800'
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="h-full bg-slate-950 flex flex-col items-center justify-center p-0 md:p-3 overflow-hidden select-none">
+
+  <!-- Mobile / Desktop Control Tower Frame -->
+  <div class="w-full h-full md:max-w-[430px] md:h-[915px] md:max-h-[96vh] bg-slate-900 md:rounded-[44px] md:border-[10px] md:border-slate-800 md:shadow-2xl relative flex flex-col overflow-hidden">
+
+    <!-- Top Admin Header -->
+    <div class="h-16 px-4 bg-slate-950/95 border-b border-slate-800 flex items-center justify-between z-30 shrink-0">
+      <div class="flex items-center gap-2.5">
+        <img src="./public/logo.png" class="w-8 h-8 rounded-full border-2 border-amber-400" alt="Logo">
+        <div>
+          <h1 class="text-xs font-black text-white tracking-wider flex items-center gap-1.5">
+            <span>MOHAMEDTECH CONTROL</span>
+            <span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-black">MMILIKI</span>
+          </h1>
+          <p class="text-[9px] text-amber-400/90">Ofisi ya Usajili & Feedback za Wateja</p>
+        </div>
+      </div>
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" title="Mfumo Uko Salama"></span>
+    </div>
+
+    <!-- Main Admin Content Area -->
+    <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-3.5 hide-scrollbar">
+
+      <!-- Financial Metrics Card: 15% Commission -->
+      <div class="p-4 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-amber-950/40 border border-amber-500/40 shadow-xl flex flex-col gap-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Mapato Yako (Tume ya 15%)</span>
+          <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">Moja kwa Moja</span>
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-xs text-amber-400 font-bold">TZS</span>
+          <span id="adminTotalCommission" class="text-2xl font-black text-white">276,000</span>
+        </div>
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[10px] text-slate-400">
+          <span>Thamani ya Safari: <strong id="adminTotalGrossFares" class="text-white">TZS 1,840,000</strong></span>
+          <button onclick="alert('Uhamisho wa Tume unafanyika kwenda Akaunti yako ya Benki au M-Pesa.')" class="text-emerald-400 font-bold hover:underline">
+            Toa Tume &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- SECTION: FEEDBACK & MALALAMIKO YA WATEJA (LIVE CUSTOMER REVIEWS) -->
+      <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xs font-black text-white flex items-center gap-1.5">
+              <i data-lucide="message-square" class="w-4 h-4 text-cyan-400"></i>
+              Feedback & Maoni ya Wateja
+            </h3>
+            <p class="text-[10px] text-slate-400">Wateja wakimaliza safari kwenye Safaris Ride, maoni yote yanasafirishwa hapa</p>
+          </div>
+          <span id="feedbackCounterBadge" class="px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800/40 text-[10px] font-bold">
+            3 Maoni
+          </span>
+        </div>
+
+        <div id="feedbackListContainer" class="flex flex-col gap-2">
+          <!-- Populated dynamically from localStorage -->
+        </div>
+      </div>
+
+      <!-- SECTION: USIMAMIZI WA MADEREVA (APPROVE & SUSPEND) -->
+      <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-xs font-black text-white flex items-center gap-1.5">
+              <i data-lucide="users" class="w-4 h-4 text-emerald-400"></i>
+              Madereva Waliosajiliwa
+            </h3>
+            <p class="text-[10px] text-slate-400">Idhinisha wapya au simamisha dereva asiye na nidhamu</p>
+          </div>
+          <span id="driversCountBadge" class="text-[10px] font-bold text-emerald-400">2 Madereva</span>
+        </div>
+
+        <div id="driversListContainer" class="flex flex-col gap-2 text-xs">
+          <!-- Populated dynamically via fetchAdminData() -->
+        </div>
+      </div>
+
+      <!-- SECTION: BEI ZA HAKI KAMA BOLT (PRICING FORMULA ENGINE) -->
+      <div class="p-4 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col gap-3">
+        <h3 class="text-xs font-black text-white flex items-center gap-1.5">
+          <i data-lucide="calculator" class="w-4 h-4 text-amber-400"></i>
+          Mfumo wa Nauli za Haki (Kama Bolt)
+        </h3>
+        <p class="text-[10px] text-slate-400">
+          Umeundwa ili <strong>abiria asiumie</strong> na <strong>dereva asipate hasara</strong> kwenye foleni:
+        </p>
+
+        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+          <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="text-[9px] text-slate-400 block font-bold">Safaris Boda</span>
+            <span class="text-xs font-bold text-white block mt-1">1,000 + 500/km</span>
+            <span class="text-[9px] text-emerald-400">Min: 2,000</span>
+          </div>
+          <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="text-[9px] text-slate-400 block font-bold">Safaris Bajaj</span>
+            <span class="text-xs font-bold text-emerald-400 block mt-1">1,800 + 750/km</span>
+            <span class="text-[9px] text-emerald-400">Min: 3,500</span>
+          </div>
+          <div class="p-2.5 bg-slate-950 rounded-xl border border-slate-800">
+            <span class="text-[9px] text-slate-400 block font-bold">Safaris Gari</span>
+            <span class="text-xs font-bold text-cyan-400 block mt-1">3,000 + 1,100/km</span>
+            <span class="text-[9px] text-emerald-400">Min: 6,000</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    async function fetchAdminData() {
+      try {
+        const res = await fetch('/api/admin/data');
+        const data = await res.json();
+        if (data.success) {
+          // 1. Financials
+          if (data.financials) {
+            document.getElementById('adminTotalCommission').innerText = (data.financials.totalCommission || 276000).toLocaleString();
+            document.getElementById('adminTotalGrossFares').innerText = 'TZS ' + (data.financials.totalGrossFares || 1840000).toLocaleString();
+          }
+
+          // 2. Feedbacks
+          if (data.feedbacks) {
+            renderFeedbacks(data.feedbacks);
+          }
+
+          // 3. Drivers
+          if (data.drivers) {
+            renderDrivers(data.drivers);
+          }
+        }
+      } catch (e) {}
+    }
+
+    function renderFeedbacks(list) {
+      const container = document.getElementById('feedbackListContainer');
+      const counter = document.getElementById('feedbackCounterBadge');
+
+      container.innerHTML = '';
+      counter.innerText = `${list.length} Maoni`;
+
+      list.forEach(f => {
+        let starsHtml = '';
+        for (let i = 0; i < 5; i++) {
+          starsHtml += `<span class="${i < f.rating ? 'text-amber-400' : 'text-slate-600'}">★</span>`;
+        }
+
+        const el = document.createElement('div');
+        el.className = "p-3 bg-slate-950 rounded-2xl border border-slate-800 flex flex-col gap-1.5 animate-in fade-in duration-200";
+        el.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-white text-xs">${f.riderName}</span>
+              <span class="text-[10px] text-slate-500">• ${f.date || 'Hivi Karibuni'}</span>
+            </div>
+            <div class="text-xs">${starsHtml}</div>
+          </div>
+          <p class="text-[11px] text-slate-300 font-medium">"${f.review}"</p>
+          <div class="flex items-center justify-between pt-1 border-t border-slate-900 text-[10px] text-slate-400">
+            <span>Kuhusu Dereva: <strong class="text-emerald-400">${f.driverName}</strong></span>
+            <span class="text-slate-500 font-mono">${f.route || 'Safari'}</span>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+      lucide.createIcons();
+    }
+
+    function renderDrivers(drivers) {
+      const container = document.getElementById('driversListContainer');
+      const badge = document.getElementById('driversCountBadge');
+      container.innerHTML = '';
+      badge.innerText = `${drivers.length} Madereva`;
+
+      drivers.forEach(d => {
+        const isApproved = d.status === 'approved';
+        const isOnline = d.isOnline;
+        const emoji = d.vehicle === 'boda' ? '🛵' : d.vehicle === 'gari' ? '🚗' : '🛺';
+
+        const el = document.createElement('div');
+        el.className = `p-3 bg-slate-950 rounded-2xl border ${isApproved ? 'border-slate-800' : 'border-amber-500/40'} flex items-center justify-between`;
+        el.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-lg">
+              ${emoji}
+            </div>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-bold text-white">${d.name}</span>
+                <span class="text-[9px] ${isApproved ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'} px-1 rounded font-bold">
+                  ${isApproved ? 'Aliyeidhinishwa' : 'Amesimamishwa'}
+                </span>
+                <span class="text-[9px] ${isOnline ? 'text-emerald-400' : 'text-slate-500'} font-bold">
+                  ${isOnline ? '● Hewani' : '○ Offline'}
+                </span>
+              </div>
+              <p class="text-[10px] text-slate-400">${d.vehicleModel || d.vehicle} (${d.plate}) • Rating ${d.rating || 5.0} ⭐ • Safari ${d.tripsCount || 0}</p>
+            </div>
+          </div>
+          <div>
+            ${isApproved ? `
+              <button onclick="toggleDriverAction('${d.id}', 'suspend')" class="px-2.5 py-1 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 rounded-lg text-[10px] font-bold border border-rose-500/30">
+                Simamisha
+              </button>
+            ` : `
+              <button onclick="toggleDriverAction('${d.id}', 'approve')" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-lg text-[10px] font-black">
+                Idhinisha ✓
+              </button>
+            `}
+          </div>
+        `;
+        container.appendChild(el);
+      });
+      lucide.createIcons();
+    }
+
+    async function toggleDriverAction(driverId, action) {
+      try {
+        const res = await fetch('/api/admin/driver-action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ driverId, action })
+        });
+        const data = await res.json();
+        if (data.success) {
+          fetchAdminData();
+        }
+      } catch (e) {
+        alert("Hitilafu katika kusasisha hadhi ya dereva.");
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchAdminData();
+      setInterval(fetchAdminData, 2000);
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>

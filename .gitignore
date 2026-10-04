@@ -1,0 +1,4 @@
+android_builder/
+cloudflared.exe
+*.log
+__pycache__/

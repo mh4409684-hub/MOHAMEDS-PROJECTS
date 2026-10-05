@@ -6,10 +6,22 @@ import json
 import urllib.parse
 import time
 import mimetypes
+import math
 
 mimetypes.add_type('application/vnd.android.package-archive', '.apk')
 
 sys.stdout.reconfigure(encoding='utf-8')
+
+def haversine_km(lat1, lon1, lat2, lon2):
+    try:
+        R = 6371.0
+        dlat = math.radians(float(lat2) - float(lat1))
+        dlon = math.radians(float(lon2) - float(lon1))
+        a = math.sin(dlat / 2.0)**2 + math.cos(math.radians(float(lat1))) * math.cos(math.radians(float(lat2))) * math.sin(dlon / 2.0)**2
+        c = 2.0 * math.atan2(math.sqrt(a), math.sqrt(1.0 - a))
+        return R * c
+    except Exception:
+        return 9999.0
 
 PORT = int(os.environ.get('PORT', 8081))
 DIRECTORY = os.path.dirname(os.path.abspath(__file__))
@@ -127,17 +139,71 @@ class SafarisHandler(http.server.SimpleHTTPRequestHandler):
                 self.wfile.write(json.dumps({"success": True, "drivers": online}).encode('utf-8'))
                 return
 
-            # 2. Driver polling for pending ride in their tier
+            # 2. Driver polling for pending ride with SMART PROXIMITY DISPATCH (BOLT ALGORITHM)
             elif path == '/api/driver/pending-ride':
                 driver_id = query.get('driverId', [''])[0]
                 driver = next((d for d in db['drivers'] if d['id'] == driver_id), None)
                 found_ride = None
+
                 if driver and driver.get('isOnline') and driver.get('status') == 'approved':
+                    d_vehicle = driver.get('vehicle', 'bajaj')
+                    d_lat = float(driver.get('lat', -6.8228))
+                    d_lng = float(driver.get('lng', 39.2785))
+
                     for ride_id, r in db['activeRides'].items():
-                        if r['status'] == 'searching':
-                            if r['tier'] == driver.get('vehicle') or driver.get('vehicle') == 'all' or not driver.get('vehicle'):
-                                found_ride = r
-                                break
+                        if r.get('status') != 'searching':
+                            continue
+
+                        # If this driver already declined this ride, do not ask again
+                        if driver_id in r.get('rejectedDrivers', []):
+                            continue
+
+                        # Vehicle tier check (boda, bajaj, gari)
+                        if r.get('tier') != d_vehicle and d_vehicle != 'all' and r.get('tier') != 'all':
+                            continue
+
+                        # Pickup coordinates
+                        p_coords = r.get('pickupCoords', [-6.8228, 39.2785])
+                        p_lat, p_lng = float(p_coords[0]), float(p_coords[1])
+                        d_dist = haversine_km(d_lat, d_lng, p_lat, p_lng)
+
+                        # Rank all eligible online approved drivers by real distance to pickup
+                        candidate_drivers = []
+                        for other_d in db['drivers']:
+                            if other_d.get('isOnline') and other_d.get('status') == 'approved':
+                                if other_d['id'] in r.get('rejectedDrivers', []):
+                                    continue
+                                if other_d.get('vehicle') == r.get('tier') or other_d.get('vehicle') == 'all' or r.get('tier') == 'all':
+                                    c_lat = float(other_d.get('lat', -6.8228))
+                                    c_lng = float(other_d.get('lng', 39.2785))
+                                    dist = haversine_km(c_lat, c_lng, p_lat, p_lng)
+                                    candidate_drivers.append((dist, other_d['id']))
+
+                        candidate_drivers.sort(key=lambda x: x[0])
+                        elapsed = time.time() - r.get('createdAt', time.time())
+
+                        # Proximity cascading dispatch:
+                        # Stage 1 (0 to 6s): Only #1 closest driver (within 10km)
+                        # Stage 2 (6 to 15s): Top 3 closest drivers (within 15km)
+                        # Stage 3 (> 15s): Any matching driver within 25km
+                        should_dispatch = False
+                        if elapsed < 6.0:
+                            if candidate_drivers and candidate_drivers[0][1] == driver_id and d_dist <= 10.0:
+                                should_dispatch = True
+                        elif elapsed < 15.0:
+                            top_ids = [c[1] for c in candidate_drivers[:3]]
+                            if driver_id in top_ids and d_dist <= 15.0:
+                                should_dispatch = True
+                        else:
+                            if d_dist <= 25.0:
+                                should_dispatch = True
+
+                        if should_dispatch:
+                            found_ride = dict(r)
+                            found_ride['distanceToPickup'] = round(d_dist, 1)
+                            found_ride['etaMinutes'] = max(1, round(d_dist * 2.2))
+                            break
+
                 self.wfile.write(json.dumps({"success": True, "ride": found_ride}).encode('utf-8'))
                 return
 
@@ -185,23 +251,36 @@ class SafarisHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
 
-            # 1. Driver Registration
+            # 1. Driver Registration with full details and real GPS coordinates
             if path == '/api/driver/register':
-                driver_id = f"DRV-{int(time.time() % 10000)}"
+                driver_id = f"DRV-{int(time.time() * 1000) % 10000}"
+                name = (body.get("name") or "Dereva Mpya").strip()
+                phone = (body.get("phone") or "07XXXXXXXX").strip()
+                plate = (body.get("plate") or "T 100 AAA").strip().upper()
+                vehicle = body.get("vehicle", "bajaj")
+                vehicle_model = (body.get("vehicleModel") or "TVS King").strip()
+                license_num = (body.get("licenseNumber") or f"DL-{int(time.time() % 1000000)}").strip()
+                city = (body.get("city") or "Dar es Salaam").strip()
+                lat = float(body.get("lat", -6.8228))
+                lng = float(body.get("lng", 39.2785))
+
                 new_driver = {
                     "id": driver_id,
-                    "name": body.get("name", "Dereva Mpya"),
-                    "phone": body.get("phone", "07XXXXXXXX"),
-                    "vehicle": body.get("vehicle", "bajaj"),
-                    "vehicleModel": body.get("vehicleModel", "TVS King"),
-                    "plate": body.get("plate", "T 100 AAA"),
+                    "name": name,
+                    "phone": phone,
+                    "vehicle": vehicle,
+                    "vehicleModel": vehicle_model,
+                    "plate": plate,
+                    "licenseNumber": license_num,
+                    "city": city,
                     "rating": 5.0,
                     "tripsCount": 0,
-                    "status": "approved", # Auto-approve for demo, admin can suspend
+                    "status": "approved", # Immediately active to take nearby rides
                     "isOnline": True,
-                    "lat": -6.8228,
-                    "lng": 39.2785,
-                    "walletBalance": 10000
+                    "lat": lat,
+                    "lng": lng,
+                    "walletBalance": 10000,
+                    "registeredAt": time.strftime("%Y-%m-%d %H:%M:%S")
                 }
                 db['drivers'].append(new_driver)
                 save_db(db)
@@ -215,8 +294,8 @@ class SafarisHandler(http.server.SimpleHTTPRequestHandler):
                 for d in db['drivers']:
                     if d['id'] == driver_id:
                         d['isOnline'] = is_online
-                        if 'lat' in body: d['lat'] = body['lat']
-                        if 'lng' in body: d['lng'] = body['lng']
+                        if 'lat' in body: d['lat'] = float(body['lat'])
+                        if 'lng' in body: d['lng'] = float(body['lng'])
                         break
                 save_db(db)
                 self.wfile.write(json.dumps({"success": True, "isOnline": is_online}).encode('utf-8'))
@@ -227,7 +306,7 @@ class SafarisHandler(http.server.SimpleHTTPRequestHandler):
                 ride_id = f"RIDE-{int(time.time() * 1000) % 1000000}"
                 new_ride = {
                     "rideId": ride_id,
-                    "riderName": body.get("riderName", "Mohamed Mteja"),
+                    "riderName": body.get("riderName", "Mteja"),
                     "pickup": body.get("pickup", "Kariakoo"),
                     "dropoff": body.get("dropoff", "Mlimani City"),
                     "pickupCoords": body.get("pickupCoords", [-6.8228, 39.2785]),
@@ -237,11 +316,45 @@ class SafarisHandler(http.server.SimpleHTTPRequestHandler):
                     "fare": body.get("fare", 5000),
                     "status": "searching",
                     "driver": None,
+                    "rejectedDrivers": [],
                     "createdAt": time.time()
                 }
                 db['activeRides'][ride_id] = new_ride
                 save_db(db)
                 self.wfile.write(json.dumps({"success": True, "ride": new_ride}).encode('utf-8'))
+                return
+
+            # 3b. Driver declines ride (Cascade to next closest driver)
+            elif path == '/api/ride/reject':
+                ride_id = body.get("rideId")
+                driver_id = body.get("driverId")
+                ride = db['activeRides'].get(ride_id)
+                if ride and driver_id:
+                    if 'rejectedDrivers' not in ride:
+                        ride['rejectedDrivers'] = []
+                    if driver_id not in ride['rejectedDrivers']:
+                        ride['rejectedDrivers'].append(driver_id)
+                    save_db(db)
+                    self.wfile.write(json.dumps({"success": True, "message": "Ride rejected, cascaded to next driver"}).encode('utf-8'))
+                    return
+                self.wfile.write(json.dumps({"success": False, "error": "Ride or Driver missing"}).encode('utf-8'))
+                return
+
+            # 3c. Admin toggles driver status (Approve / Suspend)
+            elif path == '/api/driver/toggle-status':
+                driver_id = body.get("driverId")
+                new_status = body.get("status", "approved")
+                found_d = None
+                for d in db['drivers']:
+                    if d['id'] == driver_id:
+                        d['status'] = new_status
+                        found_d = d
+                        break
+                if found_d:
+                    save_db(db)
+                    self.wfile.write(json.dumps({"success": True, "driver": found_d}).encode('utf-8'))
+                    return
+                self.wfile.write(json.dumps({"success": False, "error": "Driver not found"}).encode('utf-8'))
                 return
 
             # 4. Driver accepts a ride

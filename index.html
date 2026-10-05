@@ -521,51 +521,11 @@
             </h4>
             <p class="text-[10px] text-slate-400">Idhinisha, simamisha, au ondoa dereva asiye na nidhamu</p>
           </div>
-          <span class="text-[10px] font-bold text-emerald-400">Madereva 3</span>
+          <span id="ownerDriversCount" class="text-[10px] font-bold text-emerald-400">Inapakia...</span>
         </div>
 
-        <div class="flex flex-col gap-2 text-xs">
-          <!-- Driver 1 -->
-          <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-between">
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="font-bold text-white">Hamisi Mwamba</span>
-                <span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold">Aliyeidhinishwa</span>
-              </div>
-              <p class="text-[10px] text-slate-400">Bajaj TVS (T 482 DXB) • Rating 4.9 ⭐</p>
-            </div>
-            <button onclick="toggleDriverSuspension(this, 'Hamisi')" class="px-2.5 py-1 bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 rounded-lg text-[10px] font-bold border border-rose-500/30">
-              Simamisha
-            </button>
-          </div>
-
-          <!-- Driver 2 -->
-          <div class="p-3 bg-slate-950 rounded-2xl border border-slate-800 flex items-center justify-between">
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="font-bold text-white">Baraka John</span>
-                <span class="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold">Aliyeidhinishwa</span>
-              </div>
-              <p class="text-[10px] text-slate-400">Gari Toyota IST (T 192 CSP) • Rating 4.8 ⭐</p>
-            </div>
-            <button onclick="toggleDriverSuspension(this, 'Baraka')" class="px-2.5 py-1 bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 rounded-lg text-[10px] font-bold border border-rose-500/30">
-              Simamisha
-            </button>
-          </div>
-
-          <!-- Driver 3 (Pending) -->
-          <div class="p-3 bg-slate-950 rounded-2xl border border-amber-500/30 flex items-center justify-between">
-            <div>
-              <div class="flex items-center gap-1.5">
-                <span class="font-bold text-white">Rashid Bakari</span>
-                <span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded font-bold">Anaomba Usajili</span>
-              </div>
-              <p class="text-[10px] text-slate-400">Bodaboda Boxer (MC 992 BAA)</p>
-            </div>
-            <button onclick="approveDriver(this, 'Rashid')" class="px-2.5 py-1 bg-emerald-500 text-slate-950 rounded-lg text-[10px] font-black">
-              Idhinisha ✓
-            </button>
-          </div>
+        <div id="ownerDriversList" class="flex flex-col gap-2 text-xs">
+          <!-- Dynamically populated from /api/admin/data -->
         </div>
       </div>
 
@@ -772,7 +732,7 @@
         document.getElementById('portalDriver').classList.remove('hidden');
       } else if (portal === 'owner') {
         document.getElementById('portalOwner').classList.remove('hidden');
-        renderOwnerFeedbacks();
+        loadAdminData();
       }
 
       playTone(800, 0.08);
@@ -1198,22 +1158,67 @@
       }
     }
 
-    function toggleDriverSuspension(btn, name) {
-      if (btn.innerText === "Simamisha") {
-        btn.innerText = "Rejesha";
-        btn.className = "px-2.5 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg text-[10px] font-bold border border-emerald-500/30";
-        alert(`Dereva ${name} amesimamishwa kutoa huduma.`);
-      } else {
-        btn.innerText = "Simamisha";
-        btn.className = "px-2.5 py-1 bg-rose-500/20 text-rose-300 rounded-lg text-[10px] font-bold border border-rose-500/30";
-        alert(`Dereva ${name} amerejeshwa hewani.`);
-      }
+    async function loadAdminData() {
+      try {
+        const res = await fetch('/api/admin/data');
+        const data = await res.json();
+        if (data.success) {
+          if (data.feedbacks) customerFeedbacks = data.feedbacks;
+          if (data.drivers) renderOwnerDriversList(data.drivers);
+          if (data.financials) {
+            const revEl = document.getElementById('statTotalRevenue');
+            if (revEl) revEl.innerText = 'TZS ' + (data.financials.totalCommission || 0).toLocaleString();
+            const grossEl = document.getElementById('statGrossVolume');
+            if (grossEl) grossEl.innerText = 'TZS ' + (data.financials.totalGrossFares || 0).toLocaleString();
+          }
+        }
+      } catch (e) {}
+      renderOwnerFeedbacks();
     }
 
-    function approveDriver(btn, name) {
-      btn.innerText = "Aliyeidhinishwa ✓";
-      btn.className = "px-2.5 py-1 bg-slate-800 text-slate-400 rounded-lg text-[10px] font-bold";
-      alert(`Dereva ${name} ameidhinishwa rasmi kuanza kupokea safari.`);
+    function renderOwnerDriversList(drivers) {
+      const container = document.getElementById('ownerDriversList');
+      const countEl = document.getElementById('ownerDriversCount');
+      if (!container) return;
+      container.innerHTML = '';
+      if (countEl) countEl.innerText = `Madereva ${drivers.length}`;
+
+      drivers.forEach(d => {
+        const isApproved = d.status === 'approved';
+        const card = document.createElement('div');
+        card.className = `p-3 bg-slate-950 rounded-2xl border ${isApproved ? 'border-slate-800' : 'border-amber-500/30'} flex items-center justify-between`;
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-white text-xs">${d.name}</span>
+              <span class="text-[9px] ${isApproved ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'} px-1.5 py-0.5 rounded font-bold">
+                ${isApproved ? 'Aliyeidhinishwa' : 'Amesimamishwa'}
+              </span>
+            </div>
+            <p class="text-[10px] text-slate-400 capitalize">${d.vehicle} ${d.vehicleModel || ''} (${d.plate}) • Rating ${d.rating || 5.0} ⭐ • ${d.phone || ''}</p>
+          </div>
+          <button onclick="toggleDriverStatus('${d.id}', '${isApproved ? 'suspended' : 'approved'}')" class="px-2.5 py-1 ${isApproved ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-emerald-500 text-slate-950 font-black'} rounded-lg text-[10px] font-bold">
+            ${isApproved ? 'Simamisha' : 'Idhinisha ✓'}
+          </button>
+        `;
+        container.appendChild(card);
+      });
+      lucide.createIcons();
+    }
+
+    async function toggleDriverStatus(driverId, newStatus) {
+      try {
+        const res = await fetch('/api/driver/toggle-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ driverId, status: newStatus })
+        });
+        const data = await res.json();
+        if (data.success) {
+          loadAdminData();
+          alert(`Hali ya dereva imebadilishwa kuwa: ${newStatus === 'approved' ? 'Aliyeidhinishwa' : 'Amesimamishwa'}`);
+        }
+      } catch (e) {}
     }
 
     function openRiderProfileModal() {
@@ -1229,7 +1234,7 @@
       document.getElementById('ownerRateGari').value = appConfig.rates.gari;
 
       initRiderMap();
-      renderOwnerFeedbacks();
+      loadAdminData();
       lucide.createIcons();
     });
 

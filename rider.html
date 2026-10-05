@@ -796,8 +796,8 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            riderName: "Mohamed Yassir",
-            pickup: "Kariakoo, Dar es Salaam",
+            riderName: "Mohamed Mteja",
+            pickup: currentPickupName,
             dropoff: destName,
             pickupCoords: userLocation,
             dropCoords: destinationCoords,
@@ -841,7 +841,7 @@
             }
           }
         } catch (e) {}
-      }, 1500);
+      }, 1000);
     }
 
     function matchedDriverEnRoute(driver) {

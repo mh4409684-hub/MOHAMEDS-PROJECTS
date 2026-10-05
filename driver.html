@@ -505,8 +505,8 @@
       } catch (e) {}
     }
 
-    // POLL FOR REAL PENDING RIDES FROM PASSENGERS (BOLT DISPATCH)
-    let pollInterval = setInterval(checkPendingRides, 1800);
+    // FAST POLL FOR REAL PENDING RIDES FROM NEARBY PASSENGERS (BOLT PROXIMITY DISPATCH: 1 SEC)
+    let pollInterval = setInterval(checkPendingRides, 1000);
 
     async function checkPendingRides() {
       if (!isOnline || activeTripRide || document.getElementById('modalTripAlert').classList.contains('flex')) {
@@ -535,8 +535,10 @@
       document.getElementById('alertAdminShare').innerText = `Tume ya Mmiliki (15%): TZS ${adminComm.toLocaleString()}`;
       document.getElementById('alertPickupLoc').innerText = ride.pickup;
       document.getElementById('alertDropLoc').innerText = ride.dropoff;
-      document.getElementById('alertRiderName').innerText = ride.riderName || "Mohamed Mteja";
-      document.getElementById('alertDistance').innerText = `${ride.distanceKm || 4.5} km`;
+      document.getElementById('alertRiderName').innerText = ride.riderName || "Mteja";
+
+      const distText = ride.distanceToPickup ? `${ride.distanceToPickup} km kutoka ulipo (Dk ${ride.etaMinutes || 2})` : `${ride.distanceKm || 4.5} km safari`;
+      document.getElementById('alertDistance').innerText = distText;
 
       document.getElementById('modalTripAlert').classList.remove('hidden');
       document.getElementById('modalTripAlert').classList.add('flex');
@@ -580,10 +582,23 @@
       }
     }
 
-    function declineTrip() {
+    async function declineTrip() {
       clearInterval(countdownInterval);
       document.getElementById('modalTripAlert').classList.add('hidden');
       document.getElementById('modalTripAlert').classList.remove('flex');
+
+      if (currentIncomingRide) {
+        try {
+          await fetch('/api/ride/reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              rideId: currentIncomingRide.rideId,
+              driverId: currentDriver.id
+            })
+          });
+        } catch (e) {}
+      }
       currentIncomingRide = null;
     }
 
@@ -744,7 +759,9 @@
             phone,
             vehicle: selectedRegVehicle,
             vehicleModel,
-            plate
+            plate,
+            lat: driverLocation[0],
+            lng: driverLocation[1]
           })
         });
         const data = await res.json();
@@ -752,8 +769,9 @@
           currentDriver = data.driver;
           localStorage.setItem('safaris_driver_profile', JSON.stringify(currentDriver));
           renderDriverUI();
+          syncDriverStatus();
           closeDriverProfileModal();
-          alert(`Hongera Dereva ${name}! Umesajiliwa kikamilifu na chombo chako (${plate}) kipo tayari kupokea maombi ya safari.`);
+          alert(`Hongera Dereva ${name}! Umesajiliwa kikamilifu na chombo chako (${plate}) kipo tayari kupokea maombi ya safari za karibu.`);
         }
       } catch (err) {
         alert("Imeshindikana kusajili dereva.");

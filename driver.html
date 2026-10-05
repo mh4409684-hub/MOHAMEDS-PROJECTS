@@ -85,8 +85,13 @@
 
     <!-- Main Map Wrapper -->
     <div class="w-full flex-1 relative flex flex-col overflow-hidden">
-      <!-- Fullscreen Map (OpenStreetMap: NO WATERMARKS) -->
-      <div id="driverMap" class="absolute inset-0 z-0 bg-slate-900"></div>
+      <!-- Fullscreen Map (Google Maps Engine: Fast, Crisp & Reliable) -->
+      <div id="driverMap" class="absolute inset-0 z-0 bg-slate-900" style="min-height: 100%; width: 100%; height: 100%;"></div>
+
+      <!-- Floating GPS Recenter Button -->
+      <button onclick="locateDriverGPS(true)" class="absolute right-4 bottom-28 z-20 w-11 h-11 rounded-2xl bg-slate-900/95 backdrop-blur-md border border-slate-700 shadow-2xl flex items-center justify-center text-emerald-400 hover:scale-105 active:scale-95 transition-all pointer-events-auto" title="Nilete Nilipo">
+        <i data-lucide="locate-fixed" class="w-5 h-5"></i>
+      </button>
 
       <!-- Driver Earnings Floating Pill (Top) -->
       <div class="absolute top-3 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
@@ -345,22 +350,55 @@
     function initDriverMap() {
       if (map) return;
 
-      map = L.map('driverMap', { zoomControl: false, attributionControl: false }).setView(driverLocation, 15);
+      map = L.map('driverMap', {
+        zoomControl: false,
+        attributionControl: false
+      }).setView(driverLocation, 15);
 
-      // OpenStreetMap: CLEAN TILES WITHOUT ANY WATERMARKS OR API KEYS
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
+      // Official Google Maps Standard Street Layer (Fast, Clean, Crisp, All Tanzania Streets)
+      L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
       }).addTo(map);
 
       updateDriverMarkerIcon();
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((pos) => {
-          driverLocation = [pos.coords.latitude, pos.coords.longitude];
-          if (driverMarker) driverMarker.setLatLng(driverLocation);
-          map.setView(driverLocation, 15);
-          syncDriverStatus();
-        }, () => {});
+      // Ensure Leaflet calculates real container dimensions properly on mobile
+      setTimeout(() => { if (map) map.invalidateSize(); }, 150);
+      setTimeout(() => { if (map) map.invalidateSize(); }, 600);
+      setTimeout(() => { if (map) map.invalidateSize(); }, 1500);
+      window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
+
+      // Automatically request GPS location on load
+      locateDriverGPS(false);
+    }
+
+    function locateDriverGPS(notify = false) {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            driverLocation = [pos.coords.latitude, pos.coords.longitude];
+            if (driverMarker) driverMarker.setLatLng(driverLocation);
+            if (map) {
+              map.setView(driverLocation, 16);
+              map.invalidateSize();
+            }
+            syncDriverStatus();
+            if (notify) {
+              alert("✓ Mahali pako pametambuliwa kikamilifu!");
+            }
+          },
+          (err) => {
+            if (notify) {
+              alert("Tafadhali washa 'Location / GPS' kwenye simu yako ili ramani isome ulipo.");
+            }
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
       }
     }
 

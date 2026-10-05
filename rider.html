@@ -356,11 +356,12 @@
     function initMap() {
       if (map) return;
 
-      map = L.map('map', { zoomControl: false, attributionControl: false }).setView(userLocation, 14);
+      map = L.map('map', { zoomControl: false, attributionControl: false }).setView(userLocation, 15);
 
-      // Clean Standard OpenStreetMap (NO WATERMARK, NO API KEY)
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
+      // Official Google Maps Standard Street Layer (Fast, Clean, Crisp, All Tanzania Streets)
+      L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
       }).addTo(map);
 
       const userIcon = L.divIcon({
@@ -380,12 +381,39 @@
       // Spawn Nearby Vehicles
       spawnNearbyCars();
 
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition((pos) => {
-          userLocation = [pos.coords.latitude, pos.coords.longitude];
-          userMarker.setLatLng(userLocation);
-          map.setView(userLocation, 15);
-        }, () => {});
+      setTimeout(() => { if (map) map.invalidateSize(); }, 150);
+      setTimeout(() => { if (map) map.invalidateSize(); }, 600);
+      setTimeout(() => { if (map) map.invalidateSize(); }, 1500);
+      window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
+
+      recenterGPS(false);
+    }
+
+    function recenterGPS(notify = false) {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            userLocation = [pos.coords.latitude, pos.coords.longitude];
+            if (userMarker) userMarker.setLatLng(userLocation);
+            if (map) {
+              map.setView(userLocation, 16);
+              map.invalidateSize();
+            }
+            if (notify) {
+              alert("✓ Mahali pako pametambuliwa kikamilifu!");
+            }
+          },
+          (err) => {
+            if (notify) {
+              alert("Tafadhali washa 'Location / GPS' kwenye simu yako ili ramani isome ulipo.");
+            }
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
       }
     }
 

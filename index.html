@@ -785,8 +785,11 @@
 
       mapRider = L.map('mapRider', { zoomControl: false, attributionControl: false }).setView(userLocation, 14);
 
-      // Clean OpenStreetMap Tiles (NO API KEY, NO WATERMARK, FULL ROAD NAMES)
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mapRider);
+      // Official Google Maps Standard Street Layer (Fast, Clean, Crisp, All Tanzania Streets)
+      L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
+      }).addTo(mapRider);
 
       const userIcon = L.divIcon({
         className: 'user-pin-marker',

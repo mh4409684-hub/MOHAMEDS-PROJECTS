@@ -81,8 +81,13 @@
 
     <!-- Main Map Wrapper -->
     <div class="w-full flex-1 relative flex flex-col overflow-hidden">
-      <!-- Fullscreen Map (OpenStreetMap: 100% Free, NO API Key watermark) -->
-      <div id="map" class="absolute inset-0 z-0 bg-slate-900"></div>
+      <!-- Fullscreen Map (Google Maps Standard Street Layer) -->
+      <div id="map" class="absolute inset-0 z-0 bg-slate-900" style="min-height: 100%; width: 100%; height: 100%;"></div>
+
+      <!-- Floating GPS Recenter Button -->
+      <button onclick="recenterGPS(true)" class="absolute right-4 bottom-80 z-20 w-11 h-11 rounded-2xl bg-slate-900/95 backdrop-blur-md border border-slate-700 shadow-2xl flex items-center justify-center text-emerald-400 hover:scale-105 active:scale-95 transition-all pointer-events-auto" title="Nilete Nilipo">
+        <i data-lucide="locate-fixed" class="w-5 h-5"></i>
+      </button>
 
       <!-- Live Drivers Nearby Badge -->
       <div class="absolute top-3 left-4 z-10 px-3 py-1.5 rounded-full bg-slate-950/90 backdrop-blur-md border border-slate-800 shadow-xl flex items-center gap-2">
@@ -91,35 +96,62 @@
       </div>
 
       <!-- BOTTOM SHEET 1: WHERE TO? -->
-      <div id="sheetWhereTo" class="absolute bottom-0 left-0 right-0 z-20 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800 rounded-t-[32px] p-5 shadow-2xl flex flex-col gap-3.5">
+      <div id="sheetWhereTo" class="absolute bottom-0 left-0 right-0 z-20 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800 rounded-t-[32px] p-5 shadow-2xl flex flex-col gap-3">
         <div class="w-12 h-1 bg-slate-700 rounded-full mx-auto -mt-1"></div>
 
-        <div>
-          <h2 class="text-sm font-bold text-white">Habari Mteja 👋</h2>
-          <p class="text-[11px] text-slate-400">Unakwenda wapi leo? Nauli za haki zimehesabiwa.</p>
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-white">Habari Mteja 👋</h2>
+            <p class="text-[10px] text-slate-400">Nauli za haki zinahesabiwa kulingana na ulipo.</p>
+          </div>
+          <span class="text-[9px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-bold">
+            Live GPS
+          </span>
         </div>
 
-        <button onclick="openSearchModal()" class="w-full py-3 px-4 bg-slate-900 hover:bg-slate-850 border border-slate-800 rounded-2xl flex items-center gap-3 transition-all text-left shadow-inner">
-          <div class="w-7 h-7 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center shrink-0">
+        <!-- Dynamic Pickup Box -->
+        <div class="flex items-center justify-between p-2.5 bg-slate-900/90 rounded-2xl border border-slate-800 text-xs">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-3 h-3 rounded-full bg-emerald-400 shrink-0"></div>
+            <div class="truncate">
+              <span class="text-[9px] text-slate-400 block font-bold uppercase">Mahali pa Kuchukuliwa:</span>
+              <span id="pickupLocationLabel" class="text-xs font-bold text-white truncate block">Inasoma eneo ulipo...</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button onclick="openSearchModal('pickup')" class="text-[10px] font-bold text-cyan-400 bg-cyan-500/10 hover:bg-cyan-500/20 px-2 py-1 rounded-lg border border-cyan-500/20">
+              Badili
+            </button>
+            <button onclick="recenterGPS(true)" class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-2 py-1 rounded-lg border border-emerald-500/20 flex items-center gap-1">
+              <i data-lucide="locate" class="w-3 h-3"></i>
+              <span>GPS</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Destination Search Button -->
+        <button onclick="openSearchModal('dest')" class="w-full py-3 px-4 bg-slate-900 hover:bg-slate-850 border border-emerald-500/40 rounded-2xl flex items-center gap-3 transition-all text-left shadow-inner">
+          <div class="w-7 h-7 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center shrink-0">
             <i data-lucide="search" class="w-4 h-4"></i>
           </div>
-          <span class="text-xs font-semibold text-slate-300">Tafuta eneo lolote (k.m. Mlimani City, Kariakoo...)</span>
+          <span class="text-xs font-semibold text-slate-200">Unakwenda wapi? (Tafuta eneo lolote...)</span>
         </button>
 
+        <!-- Quick Destinations -->
         <div class="flex items-center gap-2 overflow-x-auto pb-1 hide-scrollbar">
-          <button onclick="selectDestination('Mlimani City Mall', [-6.7725, 39.2205], 6.8)" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 shrink-0">
+          <button onclick="selectDestination('Mlimani City Mall', [-6.7725, 39.2205])" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 shrink-0">
             <i data-lucide="shopping-bag" class="w-3 h-3 text-cyan-400"></i>
             <span>Mlimani City</span>
           </button>
-          <button onclick="selectDestination('Kariakoo Market', [-6.8228, 39.2785], 1.2)" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 shrink-0">
+          <button onclick="selectDestination('Kariakoo Market', [-6.8228, 39.2785])" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 shrink-0">
             <i data-lucide="store" class="w-3 h-3 text-amber-400"></i>
             <span>Kariakoo</span>
           </button>
-          <button onclick="selectDestination('Posta Mpya / Kivukoni', [-6.8162, 39.2908], 3.5)" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 shrink-0">
+          <button onclick="selectDestination('Posta Mpya / Kivukoni', [-6.8162, 39.2908])" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 shrink-0">
             <i data-lucide="building" class="w-3 h-3 text-blue-400"></i>
             <span>Posta Mpya</span>
           </button>
-          <button onclick="selectDestination('Uwanja wa Ndege JNIA', [-6.8781, 39.2026], 11.4)" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 shrink-0">
+          <button onclick="selectDestination('Uwanja wa Ndege JNIA', [-6.8781, 39.2026])" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 shrink-0">
             <i data-lucide="plane" class="w-3 h-3 text-emerald-400"></i>
             <span>JNIA Airport</span>
           </button>
@@ -295,28 +327,41 @@
 
     </div>
 
-    <!-- MODAL: SEARCH DESTINATIONS FULLSCREEN -->
+    <!-- MODAL: SEARCH (PICKUP OR DESTINATION) FULLSCREEN -->
     <div id="modalSearch" class="fixed inset-0 z-50 bg-slate-950 hidden flex-col p-5 animate-in fade-in duration-200">
       <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-        <h3 class="text-sm font-bold text-white">Chagua Unakoelekea (Tanzania)</h3>
+        <div>
+          <h3 class="text-sm font-bold text-white">Chagua Maeneo (Tanzania)</h3>
+          <p class="text-[10px] text-slate-400">Unaweza kuweka unapoanzia na unakoelekea</p>
+        </div>
         <button onclick="closeSearchModal()" class="w-8 h-8 rounded-full bg-slate-900 text-slate-400 hover:text-white flex items-center justify-center">
           <i data-lucide="x" class="w-4 h-4"></i>
         </button>
       </div>
 
       <div class="flex flex-col gap-2 my-4">
-        <div class="flex items-center gap-2.5 p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs">
-          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
-          <input type="text" value="Mahali Nilipo (Kariakoo, Dar es Salaam)" readonly class="bg-transparent text-slate-300 font-medium flex-1">
+        <!-- Pickup input -->
+        <div class="flex items-center gap-2.5 p-3 bg-slate-900 rounded-xl border border-emerald-500/40 text-xs">
+          <div class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></div>
+          <input id="inputPickup" type="text" oninput="filterLocations(this.value, 'pickup')" placeholder="Mahali pa kuanzia (k.m. Sinza, Mwenge, Posta...)" class="bg-transparent text-white font-medium flex-1 focus:outline-none placeholder:text-slate-500">
+          <button onclick="recenterGPS(true); closeSearchModal();" class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg shrink-0 hover:bg-emerald-500/20 flex items-center gap-1">
+            <i data-lucide="locate" class="w-3 h-3"></i>
+            <span>GPS</span>
+          </button>
         </div>
-        <div class="flex items-center gap-2.5 p-3 bg-slate-900 rounded-xl border border-emerald-500/50 text-xs">
-          <div class="w-2.5 h-2.5 rounded bg-cyan-400"></div>
-          <input id="inputSearch" type="text" oninput="filterDestinations(this.value)" placeholder="Unakwenda wapi? (k.m. Mlimani City, Posta...)" class="bg-transparent text-white font-bold flex-1 focus:outline-none">
+        <!-- Destination input -->
+        <div class="flex items-center gap-2.5 p-3 bg-slate-900 rounded-xl border border-cyan-500/40 text-xs">
+          <div class="w-2.5 h-2.5 rounded bg-cyan-400 shrink-0"></div>
+          <input id="inputSearch" type="text" oninput="filterLocations(this.value, 'dest')" placeholder="Unakwenda wapi? (k.m. Mlimani City, Posta, Airport...)" class="bg-transparent text-white font-bold flex-1 focus:outline-none placeholder:text-slate-500">
         </div>
       </div>
 
+      <div class="flex items-center justify-between mb-2">
+        <span id="searchResultsLabel" class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Maeneo Maarufu Tanzania</span>
+        <span id="searchStatusIndicator" class="text-[10px] text-emerald-400 font-medium hidden">Inatafuta mtandaoni...</span>
+      </div>
+
       <div class="flex-1 overflow-y-auto flex flex-col gap-2 hide-scrollbar">
-        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Maeneo Maarufu</span>
         <div id="destinationsList" class="flex flex-col gap-2"></div>
       </div>
     </div>
@@ -325,33 +370,75 @@
 
   <script>
     // --- State & Fair Bolt Pricing Formula ---
-    // Bolt Pricing Structure: Base Fare + (Distance × PerKm) + (Duration × PerMin)
+    // Bolt Pricing: Base Fare + (Distance × PerKm) + (Duration × PerMin)
     const BOLT_RATES = {
       boda: { base: 1000, perKm: 500, perMin: 50, minFare: 2000 },
       bajaj: { base: 1800, perKm: 750, perMin: 80, minFare: 3500 },
       gari: { base: 3000, perKm: 1100, perMin: 120, minFare: 6000 }
     };
 
-    let userLocation = [-6.8228, 39.2785]; // Kariakoo
+    let userLocation = [-6.8228, 39.2785]; // Default: Kariakoo until GPS / user selection
+    let currentPickupName = "Kariakoo, Dar es Salaam";
     let destinationCoords = null;
+    let destinationName = "";
     let selectedTier = 'bajaj';
     let currentDistanceKm = 5.2;
     let selectedRating = 5;
     let currentPayment = "Cash (Pesa Taslimu)";
+    let activeSearchMode = 'dest';
     let map = null;
     let userMarker = null;
     let driverMarker = null;
     let routeLine = null;
 
     const TANZANIA_PLACES = [
-      { name: "Mlimani City Mall", area: "Mwenge, Sam Nujoma Rd", coords: [-6.7725, 39.2205], dist: 6.8 },
-      { name: "Kariakoo Market", area: "Msimbazi St, Kariakoo", coords: [-6.8228, 39.2785], dist: 1.2 },
-      { name: "Posta Mpya / Kivukoni", area: "Sokoine Dr, City Centre", coords: [-6.8162, 39.2908], dist: 3.5 },
-      { name: "Uwanja wa Ndege JNIA", area: "Terminal 3, Nyerere Rd", coords: [-6.8781, 39.2026], dist: 11.4 },
-      { name: "Masaki Peninsula / Slipway", area: "Chole Rd, Masaki", coords: [-6.7455, 39.2798], dist: 9.8 },
-      { name: "Sinza Kijiweni / Palestina", area: "Shekilango Rd, Sinza", coords: [-6.7865, 39.2312], dist: 5.6 },
-      { name: "Ubungo Bus Terminal", area: "Morogoro Rd, Ubungo", coords: [-6.7905, 39.2085], dist: 7.2 }
+      // Dar es Salaam
+      { name: "Mlimani City Mall", area: "Sam Nujoma Rd, Mwenge, Dar es Salaam", coords: [-6.7725, 39.2205] },
+      { name: "Kariakoo Market", area: "Msimbazi St, Kariakoo, Dar es Salaam", coords: [-6.8228, 39.2785] },
+      { name: "Posta Mpya / Kivukoni", area: "Sokoine Dr, City Centre, Dar es Salaam", coords: [-6.8162, 39.2908] },
+      { name: "Uwanja wa Ndege JNIA (Terminal 3)", area: "Nyerere Rd, Dar es Salaam", coords: [-6.8781, 39.2026] },
+      { name: "Masaki Peninsula / Slipway", area: "Chole Rd, Masaki, Dar es Salaam", coords: [-6.7455, 39.2798] },
+      { name: "Sinza Kijiweni / Palestina", area: "Shekilango Rd, Sinza, Dar es Salaam", coords: [-6.7865, 39.2312] },
+      { name: "Ubungo Bus Terminal / Maji", area: "Morogoro Rd, Ubungo, Dar es Salaam", coords: [-6.7905, 39.2085] },
+      { name: "Mbezi Louis Magufuli Terminal", area: "Morogoro Rd, Mbezi, Dar es Salaam", coords: [-6.7788, 39.1322] },
+      { name: "Tegeta Nyuki / Wazo", area: "Bagamoyo Rd, Tegeta, Dar es Salaam", coords: [-6.6782, 39.1950] },
+      { name: "Kigamboni Ferry / Daraja", area: "Kigamboni, Dar es Salaam", coords: [-6.8285, 39.3032] },
+      { name: "Mikocheni / Shoppers Plaza", area: "Mwai Kibaki Rd, Mikocheni, Dar es Salaam", coords: [-6.7621, 39.2489] },
+      { name: "Tabata Bima / Liwiti", area: "Nelson Mandela Rd, Tabata, Dar es Salaam", coords: [-6.8280, 39.2301] },
+      { name: "Oysterbay Beach / Coco Beach", area: "Toure Dr, Oysterbay, Dar es Salaam", coords: [-6.7733, 39.2764] },
+      { name: "Morocco Square / Kinondoni", area: "Ali Hassan Mwinyi Rd, Dar es Salaam", coords: [-6.7864, 39.2612] },
+      { name: "Kimara Temboni / Mwisho", area: "Morogoro Rd, Kimara, Dar es Salaam", coords: [-6.7942, 39.1678] },
+      { name: "Mbagala Rangi Tatu", area: "Kilwa Rd, Mbagala, Dar es Salaam", coords: [-6.9150, 39.2625] },
+      // Dodoma
+      { name: "Bunge la Tanzania", area: "Makole, Dodoma Mjini", coords: [-6.1731, 35.7480] },
+      { name: "Stendi Kuu Nanenane Dodoma", area: "Nzuguni, Dodoma", coords: [-6.1550, 35.8050] },
+      { name: "UDOM (Chuo Kikuu Dodoma)", area: "Chimwaga Rd, Dodoma", coords: [-6.1480, 35.8420] },
+      { name: "Dodoma City Mall / Mtendeni", area: "Mjini Kati, Dodoma", coords: [-6.1764, 35.7454] },
+      // Arusha
+      { name: "Clock Tower Arusha", area: "Boma Rd, Arusha Mjini", coords: [-3.3719, 36.6944] },
+      { name: "AIM Mall Arusha", area: "Dodoma Rd, Arusha", coords: [-3.3789, 36.6570] },
+      // Mwanza
+      { name: "Rock City Mall Mwanza", area: "Mwanza Mjini", coords: [-2.5186, 32.9038] },
+      { name: "Nyegezi Bus Terminal", area: "Nyegezi, Mwanza", coords: [-2.5714, 32.8988] },
+      // Zanzibar
+      { name: "Forodhani Gardens Zanzibar", area: "Stone Town, Zanzibar", coords: [-6.1610, 39.1880] },
+      { name: "Darajani Market Zanzibar", area: "Darajani, Zanzibar", coords: [-6.1630, 39.1940] }
     ];
+
+    // Accurate Haversine Distance Calculation (Km) with Urban Detour factor
+    function calculateHaversineKm(loc1, loc2) {
+      if (!loc1 || !loc2) return 5.0;
+      const R = 6371;
+      const dLat = (loc2[0] - loc1[0]) * Math.PI / 180;
+      const dLon = (loc2[1] - loc1[1]) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(loc1[0] * Math.PI / 180) * Math.cos(loc2[0] * Math.PI / 180) *
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const roadDetourFactor = 1.28;
+      const km = (R * c) * roadDetourFactor;
+      return Math.max(0.5, Math.round(km * 10) / 10);
+    }
 
     function initMap() {
       if (map) return;
@@ -367,16 +454,27 @@
       const userIcon = L.divIcon({
         className: 'user-pin-marker',
         html: `
-          <div class="relative w-8 h-8 flex items-center justify-center">
+          <div class="relative w-9 h-9 flex items-center justify-center cursor-grab">
             <div class="absolute inset-0 rounded-full bg-emerald-500/30 animate-ping"></div>
-            <div class="w-4 h-4 rounded-full bg-emerald-500 border-2 border-white shadow-lg"></div>
+            <div class="w-5 h-5 rounded-full bg-emerald-500 border-2 border-white shadow-xl flex items-center justify-center text-[10px] text-white font-bold">📍</div>
           </div>
         `,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16]
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
       });
 
-      userMarker = L.marker(userLocation, { icon: userIcon }).addTo(map);
+      // Draggable Pickup Pin
+      userMarker = L.marker(userLocation, { icon: userIcon, draggable: true }).addTo(map);
+      userMarker.on('dragend', (e) => {
+        const pos = e.target.getLatLng();
+        setUserLocation([pos.lat, pos.lng], true);
+      });
+
+      // Allow clicking anywhere on the map to set pickup point
+      map.on('click', (e) => {
+        if (routeLine) return; // Don't move if reviewing active route
+        setUserLocation([e.latlng.lat, e.latlng.lng], true);
+      });
 
       // Spawn Nearby Vehicles
       spawnNearbyCars();
@@ -386,17 +484,51 @@
       setTimeout(() => { if (map) map.invalidateSize(); }, 1500);
       window.addEventListener('resize', () => { if (map) map.invalidateSize(); });
 
+      // Detect current GPS position on startup
       recenterGPS(false);
+    }
+
+    function setUserLocation(coords, shouldReverseGeocode = true) {
+      userLocation = coords;
+      if (userMarker) userMarker.setLatLng(userLocation);
+      spawnNearbyCars();
+      if (shouldReverseGeocode) {
+        reverseGeocodeRider(userLocation[0], userLocation[1]);
+      }
+    }
+
+    async function reverseGeocodeRider(lat, lng) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=17&addressdetails=1`);
+        if (res.ok) {
+          const data = await res.json();
+          const addr = data.address || {};
+          const label = addr.suburb || addr.neighbourhood || addr.road || addr.residential || addr.city || addr.town || "Eneo Lililotambuliwa";
+          const city = addr.city || addr.town || addr.county || "Tanzania";
+          currentPickupName = `${label}, ${city}`;
+          updatePickupDisplays(currentPickupName);
+        }
+      } catch (e) {
+        currentPickupName = `Eneo (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+        updatePickupDisplays(currentPickupName);
+      }
+    }
+
+    function updatePickupDisplays(name) {
+      const labelEl = document.getElementById('pickupLocationLabel');
+      if (labelEl) labelEl.innerText = name;
+      const inputPickupEl = document.getElementById('inputPickup');
+      if (inputPickupEl && !inputPickupEl.matches(':focus')) inputPickupEl.value = name;
     }
 
     function recenterGPS(notify = false) {
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
-            userLocation = [pos.coords.latitude, pos.coords.longitude];
-            if (userMarker) userMarker.setLatLng(userLocation);
+            const coords = [pos.coords.latitude, pos.coords.longitude];
+            setUserLocation(coords, true);
             if (map) {
-              map.setView(userLocation, 16);
+              map.setView(coords, 16);
               map.invalidateSize();
             }
             if (notify) {
@@ -405,7 +537,7 @@
           },
           (err) => {
             if (notify) {
-              alert("Tafadhali washa 'Location / GPS' kwenye simu yako ili ramani isome ulipo.");
+              alert("Tafadhali washa 'Location / GPS' kwenye simu yako au bonyeza popote kwenye ramani kuweka ulipo.");
             }
           },
           {
@@ -418,6 +550,12 @@
     }
 
     function spawnNearbyCars() {
+      // Remove old roaming markers
+      if (window.roamingMarkers) {
+        window.roamingMarkers.forEach(m => map.removeLayer(m));
+      }
+      window.roamingMarkers = [];
+
       const vehicles = ['🚗', '🛺', '🏍️', '🚗', '🛺'];
       vehicles.forEach((v) => {
         const offsetLat = (Math.random() - 0.5) * 0.015;
@@ -430,19 +568,23 @@
           iconSize: [24, 24],
           iconAnchor: [12, 12]
         });
-        L.marker(pos, { icon: carIcon }).addTo(map);
+        const m = L.marker(pos, { icon: carIcon }).addTo(map);
+        window.roamingMarkers.push(m);
       });
     }
 
-    function recenterGPS() {
-      if (map) map.setView(userLocation, 15, { animate: true });
-    }
-
-    function openSearchModal() {
+    function openSearchModal(mode = 'dest') {
+      activeSearchMode = mode;
       document.getElementById('modalSearch').classList.remove('hidden');
       document.getElementById('modalSearch').classList.add('flex');
-      renderDestinations();
-      document.getElementById('inputSearch').focus();
+      document.getElementById('inputPickup').value = currentPickupName;
+      document.getElementById('searchResultsLabel').innerText = mode === 'pickup' ? "Chagua Mahali pa Kuchukuliwa" : "Chagua Unakokwenda (Tanzania)";
+      renderDestinations('', mode);
+      if (mode === 'pickup') {
+        document.getElementById('inputPickup').focus();
+      } else {
+        document.getElementById('inputSearch').focus();
+      }
     }
 
     function closeSearchModal() {
@@ -450,24 +592,44 @@
       document.getElementById('modalSearch').classList.remove('flex');
     }
 
-    function renderDestinations(filter = '') {
+    function renderDestinations(filter = '', mode = 'dest') {
       const container = document.getElementById('destinationsList');
       container.innerHTML = '';
 
-      const filtered = TANZANIA_PLACES.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()) || p.area.toLowerCase().includes(filter.toLowerCase()));
+      let list = TANZANIA_PLACES.map(p => ({
+        ...p,
+        dist: calculateHaversineKm(userLocation, p.coords)
+      }));
 
-      filtered.forEach(p => {
+      if (filter) {
+        const f = filter.toLowerCase();
+        list = list.filter(p => p.name.toLowerCase().includes(f) || p.area.toLowerCase().includes(f));
+      }
+
+      list.sort((a, b) => a.dist - b.dist);
+
+      list.forEach(p => {
         const item = document.createElement('div');
         item.className = "p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 rounded-2xl flex items-center justify-between cursor-pointer transition-all";
-        item.onclick = () => selectDestination(p.name, p.coords, p.dist);
+        item.onclick = () => {
+          if (mode === 'pickup') {
+            setUserLocation(p.coords, false);
+            currentPickupName = p.name;
+            updatePickupDisplays(p.name);
+            if (map) map.setView(p.coords, 15);
+            closeSearchModal();
+          } else {
+            selectDestination(p.name, p.coords);
+          }
+        };
         item.innerHTML = `
           <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-xl bg-slate-800 text-emerald-400 flex items-center justify-center">
+            <div class="w-8 h-8 rounded-xl bg-slate-800 text-${mode === 'pickup' ? 'emerald' : 'cyan'}-400 flex items-center justify-center shrink-0">
               <i data-lucide="map-pin" class="w-4 h-4"></i>
             </div>
             <div>
               <h5 class="text-xs font-bold text-white">${p.name}</h5>
-              <p class="text-[10px] text-slate-400">${p.area}</p>
+              <p class="text-[10px] text-slate-400 truncate max-w-[210px]">${p.area}</p>
             </div>
           </div>
           <span class="text-xs font-bold text-slate-400 font-mono">${p.dist} km</span>
@@ -477,8 +639,69 @@
       lucide.createIcons();
     }
 
-    function filterDestinations(val) {
-      renderDestinations(val);
+    let searchDebounceTimer = null;
+    function filterLocations(val, mode) {
+      activeSearchMode = mode;
+      renderDestinations(val, mode);
+
+      if (val.trim().length >= 3) {
+        clearTimeout(searchDebounceTimer);
+        const ind = document.getElementById('searchStatusIndicator');
+        if (ind) ind.classList.remove('hidden');
+        searchDebounceTimer = setTimeout(async () => {
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=tz&limit=6&q=${encodeURIComponent(val)}`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.length > 0) {
+                appendOnlineSearchResults(data, mode);
+              }
+            }
+          } catch (e) {
+          } finally {
+            if (ind) ind.classList.add('hidden');
+          }
+        }, 400);
+      } else {
+        const ind = document.getElementById('searchStatusIndicator');
+        if (ind) ind.classList.add('hidden');
+      }
+    }
+
+    function appendOnlineSearchResults(results, mode) {
+      const container = document.getElementById('destinationsList');
+      results.forEach(r => {
+        const coords = [parseFloat(r.lat), parseFloat(r.lon)];
+        const dist = calculateHaversineKm(userLocation, coords);
+        const item = document.createElement('div');
+        item.className = "p-3 bg-emerald-950/20 hover:bg-emerald-900/30 border border-emerald-500/30 rounded-2xl flex items-center justify-between cursor-pointer transition-all";
+        item.onclick = () => {
+          const placeTitle = r.display_name.split(',')[0];
+          if (mode === 'pickup') {
+            setUserLocation(coords, false);
+            currentPickupName = placeTitle;
+            updatePickupDisplays(placeTitle);
+            if (map) map.setView(coords, 15);
+            closeSearchModal();
+          } else {
+            selectDestination(placeTitle, coords);
+          }
+        };
+        item.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+              <i data-lucide="search" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h5 class="text-xs font-bold text-white">${r.display_name.split(',')[0]}</h5>
+              <p class="text-[10px] text-emerald-300/80 truncate max-w-[210px]">${r.display_name}</p>
+            </div>
+          </div>
+          <span class="text-xs font-bold text-emerald-400 font-mono">${dist} km</span>
+        `;
+        container.insertBefore(item, container.firstChild);
+      });
+      lucide.createIcons();
     }
 
     // Exact Bolt Fair Pricing Calculation:
@@ -486,19 +709,20 @@
       const rate = BOLT_RATES[tier];
       const estMinutes = Math.round(distKm * 2.3);
       const rawFare = rate.base + (distKm * rate.perKm) + (estMinutes * rate.perMin);
-      // Round to nearest 100 TZS
       const rounded = Math.round(Math.max(rate.minFare, rawFare) / 100) * 100;
       return rounded;
     }
 
-    function selectDestination(name, coords, dist = 5.2) {
+    function selectDestination(name, coords) {
       destinationCoords = coords;
+      destinationName = name;
+      const dist = calculateHaversineKm(userLocation, coords);
       currentDistanceKm = dist;
       closeSearchModal();
 
       document.getElementById('routeDestTitle').innerText = `Kwenda ${name}`;
       const estMin = Math.round(dist * 2.3);
-      document.getElementById('routeMetaInfo').innerText = `Umbali: ${dist} km • Muda: Dk ${estMin}`;
+      document.getElementById('routeMetaInfo').innerText = `Kutoka: ${currentPickupName.split(',')[0]} • ${dist} km (Dk ${estMin})`;
 
       if (routeLine) map.removeLayer(routeLine);
       const midLat = (userLocation[0] + coords[0]) / 2 + 0.003;
@@ -512,14 +736,13 @@
 
       map.fitBounds(routeLine.getBounds(), { padding: [50, 50] });
 
-      // Update TZS Fares based on Bolt formula
+      // Update TZS Fares dynamically based on Bolt formula from actual calculated distance
       document.getElementById('price-boda').innerText = 'TZS ' + calculateBoltFare('boda', dist).toLocaleString();
       document.getElementById('price-bajaj').innerText = 'TZS ' + calculateBoltFare('bajaj', dist).toLocaleString();
       document.getElementById('price-gari').innerText = 'TZS ' + calculateBoltFare('gari', dist).toLocaleString();
 
       document.getElementById('sheetWhereTo').classList.add('hidden');
       document.getElementById('sheetRideSelect').classList.remove('hidden');
-      document.getElementById('sheetRideSelect').classList.add('flex');
     }
 
     function cancelRoute() {

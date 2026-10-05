@@ -136,9 +136,9 @@
         </div>
 
         <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between text-[11px]">
-          <span class="text-slate-400 flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            Mfumo Unasikiliza Maombi ya Abiria...
+          <span class="text-slate-400 flex items-center gap-1.5 truncate max-w-[240px]">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0"></span>
+            <span id="driverCurrentAreaText" class="truncate font-semibold text-slate-300">Inasoma eneo ulipo...</span>
           </span>
           <button onclick="openDriverProfileModal()" class="text-xs font-bold text-amber-400 hover:underline">
             Jisajili Dereva Mpya
@@ -361,6 +361,14 @@
         subdomains: ['mt0', 'mt1', 'mt2', 'mt3']
       }).addTo(map);
 
+      // Allow driver to tap anywhere on map to set their real location
+      map.on('click', (e) => {
+        driverLocation = [e.latlng.lat, e.latlng.lng];
+        if (driverMarker) driverMarker.setLatLng(driverLocation);
+        syncDriverStatus();
+        reverseGeocodeDriver(e.latlng.lat, e.latlng.lng);
+      });
+
       updateDriverMarkerIcon();
 
       // Ensure Leaflet calculates real container dimensions properly on mobile
@@ -371,6 +379,20 @@
 
       // Automatically request GPS location on load
       locateDriverGPS(false);
+    }
+
+    async function reverseGeocodeDriver(lat, lng) {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=17&addressdetails=1`);
+        if (res.ok) {
+          const data = await res.json();
+          const addr = data.address || {};
+          const label = addr.suburb || addr.neighbourhood || addr.road || addr.residential || addr.city || addr.town || "Eneo Lililotambuliwa";
+          const city = addr.city || addr.town || addr.county || "Tanzania";
+          const el = document.getElementById('driverCurrentAreaText');
+          if (el) el.innerText = `Abiria karibu nawe (${label}, ${city})`;
+        }
+      } catch (e) {}
     }
 
     function locateDriverGPS(notify = false) {
@@ -384,13 +406,14 @@
               map.invalidateSize();
             }
             syncDriverStatus();
+            reverseGeocodeDriver(pos.coords.latitude, pos.coords.longitude);
             if (notify) {
               alert("✓ Mahali pako pametambuliwa kikamilifu!");
             }
           },
           (err) => {
             if (notify) {
-              alert("Tafadhali washa 'Location / GPS' kwenye simu yako ili ramani isome ulipo.");
+              alert("Tafadhali washa 'Location / GPS' kwenye simu yako au bonyeza kwenye ramani kuweka ulipo.");
             }
           },
           {
@@ -403,11 +426,12 @@
     }
 
     function updateDriverMarkerIcon() {
+      if (!map) return; // Prevent fatal crash if called before map init
       const iconEmoji = currentDriver.vehicle === 'boda' ? '🛵' : currentDriver.vehicle === 'gari' ? '🚗' : '🛺';
       const driverIcon = L.divIcon({
         className: 'driver-live-marker',
         html: `
-          <div class="relative w-12 h-12 flex items-center justify-center">
+          <div class="relative w-12 h-12 flex items-center justify-center cursor-grab">
             <div class="absolute inset-0 rounded-full bg-emerald-500/30 pulse-radar"></div>
             <div class="w-10 h-10 rounded-2xl bg-slate-900 border-2 border-emerald-400 flex items-center justify-center text-xl shadow-2xl">
               ${iconEmoji}
@@ -419,7 +443,13 @@
       });
 
       if (driverMarker) map.removeLayer(driverMarker);
-      driverMarker = L.marker(driverLocation, { icon: driverIcon }).addTo(map);
+      driverMarker = L.marker(driverLocation, { icon: driverIcon, draggable: true }).addTo(map);
+      driverMarker.on('dragend', (e) => {
+        const pos = e.target.getLatLng();
+        driverLocation = [pos.lat, pos.lng];
+        syncDriverStatus();
+        reverseGeocodeDriver(pos.lat, pos.lng);
+      });
     }
 
     function loadDriverFromStorage() {
@@ -731,8 +761,8 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      loadDriverFromStorage();
       initDriverMap();
+      loadDriverFromStorage();
       lucide.createIcons();
     });
   </script>

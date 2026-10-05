@@ -803,7 +803,16 @@
         iconAnchor: [16, 16]
       });
 
-      userMarker = L.marker(userLocation, { icon: userIcon }).addTo(mapRider);
+      userMarker = L.marker(userLocation, { icon: userIcon, draggable: true }).addTo(mapRider);
+      userMarker.on('dragend', (e) => {
+        const p = e.target.getLatLng();
+        userLocation = [p.lat, p.lng];
+      });
+
+      mapRider.on('click', (e) => {
+        userLocation = [e.latlng.lat, e.latlng.lng];
+        if (userMarker) userMarker.setLatLng(userLocation);
+      });
 
       // Spawn roaming nearby vehicles
       spawnNearbyVehicles();
@@ -811,9 +820,9 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition((pos) => {
           userLocation = [pos.coords.latitude, pos.coords.longitude];
-          userMarker.setLatLng(userLocation);
+          if (userMarker) userMarker.setLatLng(userLocation);
           mapRider.setView(userLocation, 15);
-        }, () => {});
+        }, () => {}, { enableHighAccuracy: true, timeout: 10000 });
       }
     }
 

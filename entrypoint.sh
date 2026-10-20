@@ -25,15 +25,15 @@ if [ "$DB_CONNECTION" = "sqlite" ] || [ -z "$DB_CONNECTION" ] && [ -z "$DATABASE
     touch /var/www/html/database/database.sqlite
 fi
 
+# Clear previous caches so new database credentials take effect immediately
+php artisan config:clear || true
+php artisan route:clear || true
+php artisan view:clear || true
+
 # Run migrations and seed
 echo "Running migrations..."
 php artisan migrate --force || true
 php artisan db:seed --force || true
-
-# Clear previous caches and recreate
-php artisan config:clear || true
-php artisan route:clear || true
-php artisan view:clear || true
 
 # Ensure all permissions are owned by www-data and fully writable after all artisan root operations
 echo "Enforcing www-data ownership and 777 permissions across storage, cache, and database..."

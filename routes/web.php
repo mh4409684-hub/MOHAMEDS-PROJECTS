@@ -27,6 +27,47 @@ Route::get('/api/health-check', function () {
     return response()->json(['status' => 'online', 'service' => 'CBE Portal', 'powered_by' => 'MOHAMEDYTECH PRO']);
 });
 
+Route::get('/api/db-check', function () {
+    try {
+        \Illuminate\Support\Facades\DB::connection()->getPdo();
+        $dbName = \Illuminate\Support\Facades\DB::connection()->getDatabaseName();
+        $tables = \Illuminate\Support\Facades\DB::select("SELECT table_name FROM information_schema.tables WHERE table_schema='public'");
+        $tableNames = array_map(fn($t) => $t->table_name, $tables);
+        return response()->json([
+            'status' => 'connected',
+            'database' => $dbName,
+            'driver' => config('database.default'),
+            'tables_count' => count($tableNames),
+            'tables' => $tableNames,
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+            'class' => get_class($e),
+        ], 500);
+    }
+});
+
+Route::get('/api/run-migrate', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $mOut = \Illuminate\Support\Facades\Artisan::output();
+        \Illuminate\Support\Facades\Artisan::call('db:seed', ['--force' => true]);
+        $sOut = \Illuminate\Support\Facades\Artisan::output();
+        return response()->json([
+            'status' => 'success',
+            'migrate' => $mOut,
+            'seed' => $sOut,
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
+
 Route::post('/api/ai/ask', [\App\Http\Controllers\AiAssistantController::class, 'ask'])->name('ai.ask');
 
 Route::get('/api/test-email', function (\Illuminate\Http\Request $request) {
